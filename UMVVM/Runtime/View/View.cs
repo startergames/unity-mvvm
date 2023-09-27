@@ -3,11 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Starter.ViewModel;
 using UnityEngine;
 
 namespace Starter.View {
     public abstract class View : MonoBehaviour {
-        protected static object GetPropertyValue(object currentObject, string path) {
+        [SerializeField]
+        public ViewModel.ViewModel viewmodel;
+
+        public object GetPropertyValue(string path) {
+            return GetPropertyValue(viewmodel, path);
+        }
+        public T GetPropertyValue<T>(string path) where T : class {
+            return GetPropertyValue(viewmodel, path) as T;
+        }
+        private static object GetPropertyValue(object currentObject, string path) {
+            (currentObject, path) = GetFullPath(currentObject, path);
             if (currentObject == null || string.IsNullOrEmpty(path)) return null;
 
             var memberParts = path.Split('.');
@@ -23,7 +34,7 @@ namespace Starter.View {
                     var key      = match.Groups[2].Value;
                     var index      = int.Parse(key);
 
-                    var member = memberType.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)[0];
+                    var member = memberType.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase)[0];
                     currentObject = GetMemberValue(member, currentObject);
 
                     if (currentObject is IList list)
@@ -32,7 +43,7 @@ namespace Starter.View {
                         currentObject = dictionary[Convert.ChangeType(key, dictionary.GetType().GetGenericArguments()[0])];
                 }
                 else {
-                    var member = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)[0];
+                    var member = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase)[0];
                     currentObject = GetMemberValue(member, currentObject);
                 }
             }
@@ -40,15 +51,25 @@ namespace Starter.View {
             return currentObject;
         }
 
-        private static object GetMemberValue(MemberInfo member, object src) {
-            switch (member) {
-                case PropertyInfo property:
-                    return property.GetValue(src, null);
-                case FieldInfo field:
-                    return field.GetValue(src);
-                default:
-                    return null;
+        private static (object obj, string path) GetFullPath(object currentObject, string path) {
+            while (true) {
+                if (currentObject is ViewModelRelay relay) {
+                    var appendedPath = !string.IsNullOrWhiteSpace(path) ? relay.prefixPath + "." + path : relay.prefixPath;
+                    currentObject = relay.viewmodel;
+                    path          = appendedPath;
+                    continue;
+                }
+
+                return (currentObject, path);
             }
+        }
+
+        private static object GetMemberValue(MemberInfo member, object src) {
+            return member switch {
+                PropertyInfo property => property.GetValue(src, null),
+                FieldInfo field => field.GetValue(src),
+                _ => null
+            };
         }
     }
 }

@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace Starter.ViewModel {
     public abstract class ViewModel : MonoBehaviour {
-        public abstract bool IsInitialized { get; protected set; }
+        private         bool IsInitialized { get; set; }
         public abstract Task Initialize();
 
         public async Task InitializeAwaiter() {
             while (!IsInitialized)
                 await Task.Delay(10);
         }
-        
+
         private async void Start() {
             await Initialize();
             IsInitialized = true;

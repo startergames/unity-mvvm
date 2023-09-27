@@ -11,12 +11,12 @@ namespace Starter.View {
     public class TextView : View {
 
         public interface IToken {
-            public string GetValue(ViewModel.ViewModel viewModel);
+            public string GetValue(View view);
         }
         [Serializable]
         public class TextToken : IToken {
             public string text;
-            public string GetValue(ViewModel.ViewModel viewModel) => text;
+            public string GetValue(View view) => text;
         }
 
         [Serializable]
@@ -24,23 +24,22 @@ namespace Starter.View {
             public string path;
             public string format;
 
-            public string GetValue(ViewModel.ViewModel viewModel) {
-                var value = GetPropertyValue(viewModel, path);
+            public string GetValue(View view) {
+                var value = view.GetPropertyValue(path);
                 return string.IsNullOrEmpty(format)
                            ? value?.ToString()
                            : string.Format("{0:" + format + "}", value);
             }
         }
 
-        public ViewModel.ViewModel viewmodel;
         public string              text;
         public TextMeshProUGUI     target;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         [SerializeReference]
         private List<IToken> tokens;
 
-        private string ResultText => tokens?.Aggregate(string.Empty, (current, token) => current + token.GetValue(viewmodel)) ?? string.Empty;
+        private string ResultText => tokens?.Aggregate(string.Empty, (current, token) => current + token.GetValue(this)) ?? string.Empty;
 
         private async void Start() {
             await viewmodel.InitializeAwaiter();
@@ -55,6 +54,10 @@ namespace Starter.View {
 #if UNITY_EDITOR
         [ContextMenu("Tokenize Text")]
         public void TokenizeText() {
+            TokenizeText(text);
+        }
+        
+        public void TokenizeText(string text) {
             tokens.Clear();
             var regex     = new Regex(@"\{([^:}]+)(?::([^}]+))?\}");
             var matches   = regex.Matches(text);
