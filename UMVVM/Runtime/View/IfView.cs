@@ -17,16 +17,16 @@ public class IfView : View {
         NotEqual,
 
         [ViewConditionTypeForNumeric]
-        Greater,
+        GreaterThan,
 
         [ViewConditionTypeForNumeric]
-        GreaterOrEqual,
+        GreaterOrEqualThan,
 
         [ViewConditionTypeForNumeric]
-        Less,
+        LessThan,
 
         [ViewConditionTypeForNumeric]
-        LessOrEqual,
+        LessOrEqualThan,
 
         [ViewConditionTypeForString]
         EqualIgnoreCase,
@@ -68,10 +68,10 @@ public class IfView : View {
             var conditionResult = condition.type switch {
                 ConditionType.Equal => Convert.ChangeType(condition.value, value.GetType()).Equals(value),
                 ConditionType.NotEqual => !Convert.ChangeType(condition.value, value.GetType()).Equals(value),
-                ConditionType.Greater => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) > 0,
-                ConditionType.GreaterOrEqual => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) >= 0,
-                ConditionType.Less => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) < 0,
-                ConditionType.LessOrEqual => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) <= 0,
+                ConditionType.GreaterThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) < 0,
+                ConditionType.GreaterOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) <= 0,
+                ConditionType.LessThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) > 0,
+                ConditionType.LessOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) >= 0,
                 ConditionType.EqualIgnoreCase => string.Equals(value as string, condition.value, StringComparison.OrdinalIgnoreCase),
                 ConditionType.NullOrEmpty => string.IsNullOrEmpty(value as string),
                 ConditionType.NullOrWhiteSpace => string.IsNullOrWhiteSpace(value as string),
