@@ -20,16 +20,15 @@ namespace Starter.ViewModel {
         public Sprite[] TestSprite;
     }
     public class TestViewModel : ViewModel {
-        public override bool IsInitialized { get; protected set; }
         public override async Task Initialize() {
             TestString    = "TestString";
             TestFloat     = 10.0f;
             Temp          = new Temp();
         }
-        
-        public string TestString { get; private set; }
-        public float  TestFloat  { get; private set; }
-        public Temp   Temp       {get;  private set; }
+
+        public string   TestString;
+        public float    TestFloat;
+        public Temp     Temp;
         public Sprite[] TestSprite;
     }
 }

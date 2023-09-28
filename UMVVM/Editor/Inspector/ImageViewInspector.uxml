@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.startergames.mvvm/Editor/MVVM.Editor.uss?fileID=7433441132597879392&amp;guid=55c0da55a2fbee149bfe28bd75ea975e&amp;type=3#MVVM.Editor" />
+    <ui:Label tabindex="-1" text="Text View" display-tooltip-when-elided="true" class="title" />
+    <uie:ObjectField label="Binding" name="viewmodel" binding-path="viewmodel" type="Starter.ViewModel.ViewModel, Starter.MVVM" />
+    <uie:PropertyField name="path" binding-path="path" />
+    <uie:PropertyField name="target" binding-path="target" />
+</ui:UXML>

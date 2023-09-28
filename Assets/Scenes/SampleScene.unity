@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 346360676}
   - component: {fileID: 346360675}
   - component: {fileID: 346360681}
+  - component: {fileID: 346360682}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -168,55 +169,55 @@ MonoBehaviour:
     : {Temp.TestDict[4]}'
   target: {fileID: 1840500191}
   tokens:
-  - rid: 5604479597728760780
-  - rid: 5604479597728760781
-  - rid: 5604479597728760782
-  - rid: 5604479597728760783
-  - rid: 5604479597728760784
-  - rid: 5604479597728760785
-  - rid: 5604479597728760786
-  - rid: 5604479597728760787
+  - rid: 5604479662526038184
+  - rid: 5604479662526038185
+  - rid: 5604479662526038186
+  - rid: 5604479662526038187
+  - rid: 5604479662526038188
+  - rid: 5604479662526038189
+  - rid: 5604479662526038190
+  - rid: 5604479662526038191
   references:
     version: 2
     RefIds:
-    - rid: 5604479597728760780
+    - rid: 5604479662526038184
       type: {class: TextView/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: 'test : '
-    - rid: 5604479597728760781
+    - rid: 5604479662526038185
       type: {class: TextView/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestDouble
         format: 
-    - rid: 5604479597728760782
+    - rid: 5604479662526038186
       type: {class: TextView/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: ',
 
           arr : '
-    - rid: 5604479597728760783
+    - rid: 5604479662526038187
       type: {class: TextView/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestArray[2]
         format: 
-    - rid: 5604479597728760784
+    - rid: 5604479662526038188
       type: {class: TextView/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: '
 
           list : '
-    - rid: 5604479597728760785
+    - rid: 5604479662526038189
       type: {class: TextView/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestList[3]
         format: 
-    - rid: 5604479597728760786
+    - rid: 5604479662526038190
       type: {class: TextView/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: '
 
           dict : '
-    - rid: 5604479597728760787
+    - rid: 5604479662526038191
       type: {class: TextView/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestDict[4]
@@ -233,9 +234,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95028644c91a4733a43f3f3123db8552, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TestString: Hello
+  TestFloat: 123
+  Temp:
+    TestSprite: []
   TestSprite:
   - {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 0}
 --- !u!114 &346360677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -332,9 +337,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a421562fa1464a38b16020ca1a07c499, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ViewModel: {fileID: 346360676}
-  path: TestSprite[1]
+  viewmodel: {fileID: 346360676}
+  path: TestSprite[0]
   target: {fileID: 1810570155}
+--- !u!114 &346360682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346360674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d9a1f3b9ad346340b99b4a2c561be68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  viewmodel: {fileID: 0}
+  conditions:
+  - logicalType: 0
+    path: 
+    type: 0
+    value: 
+  onTrue:
+    m_PersistentCalls:
+      m_Calls: []
+  onFalse:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

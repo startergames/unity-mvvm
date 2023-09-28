@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.startergames.mvvm/Editor/MVVM.Editor.uss?fileID=7433441132597879392&amp;guid=55c0da55a2fbee149bfe28bd75ea975e&amp;type=3#MVVM.Editor" />
+    <ui:Label tabindex="-1" text="If" display-tooltip-when-elided="true" class="title" />
+    <ui:Label text="Error Message" display-tooltip-when-elided="true" name="error" style="margin-left: 3px; margin-right: 3px; margin-top: 3px; margin-bottom: 3px; padding-left: 3px; padding-right: 3px; padding-top: 3px; padding-bottom: 3px; background-color: rgb(255, 114, 114); color: rgb(0, 0, 0); display: none;" />
+    <uie:ObjectField label="Binding" name="viewmodel" binding-path="viewmodel" type="Starter.ViewModel.ViewModel, Starter.MVVM" />
+    <uie:PropertyField name="conditions" binding-path="conditions" />
+    <uie:PropertyField name="onTrue" binding-path="onTrue" />
+    <uie:PropertyField name="onFalse" binding-path="onFalse" />
+</ui:UXML>

@@ -50,14 +50,14 @@ public class IfView : View {
     [Serializable]
     public class Condition {
         public LogicalType   logicalType = LogicalType.Or;
-        [ViewModelPath(1)]
+        [ViewModelPath]
         public string        path;
         public ConditionType type = ConditionType.None;
         public string        value;
     }
 
     public async void Start() {
-        await viewmodel.InitializeAwaiter();
+        await WaitViewModelInitialized();
         UpdateView();
     }
 

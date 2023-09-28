@@ -3,13 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Starter.ViewModel;
 using UnityEngine;
 
 namespace Starter.View {
     public abstract class View : MonoBehaviour {
         [SerializeField]
-        public ViewModel.ViewModel viewmodel;
+        private ViewModel.ViewModel viewmodel;
+        
+        public ViewModel.ViewModel ViewModel => GetFullPath(viewmodel, "").obj;
+
+        protected Task WaitViewModelInitialized() {
+            return viewmodel.InitializeAwaiter();
+        }
 
         public object GetPropertyValue(string path) {
             return GetPropertyValue(viewmodel, path);
@@ -17,8 +24,9 @@ namespace Starter.View {
         public T GetPropertyValue<T>(string path) where T : class {
             return GetPropertyValue(viewmodel, path) as T;
         }
-        private static object GetPropertyValue(object currentObject, string path) {
-            (currentObject, path) = GetFullPath(currentObject, path);
+        private static object GetPropertyValue(ViewModel.ViewModel viewModel, string path) {
+            (viewModel, path) = GetFullPath(viewModel, path);
+            object currentObject = viewModel;
             if (currentObject == null || string.IsNullOrEmpty(path)) return null;
 
             var memberParts = path.Split('.');
@@ -51,7 +59,7 @@ namespace Starter.View {
             return currentObject;
         }
 
-        private static (object obj, string path) GetFullPath(object currentObject, string path) {
+        private static (ViewModel.ViewModel obj, string path) GetFullPath(ViewModel.ViewModel currentObject, string path) {
             while (true) {
                 if (currentObject is ViewModelRelay relay) {
                     var appendedPath = !string.IsNullOrWhiteSpace(path) ? relay.prefixPath + "." + path : relay.prefixPath;
