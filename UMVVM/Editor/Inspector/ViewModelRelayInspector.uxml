@@ -3,7 +3,7 @@
     <ui:Label tabindex="-1" text="Relay" display-tooltip-when-elided="true" class="title" />
     <ui:Label text="Error Message" display-tooltip-when-elided="true" name="error" style="margin-left: 3px; margin-right: 3px; margin-top: 3px; margin-bottom: 3px; padding-left: 3px; padding-right: 3px; padding-top: 3px; padding-bottom: 3px; background-color: rgb(255, 114, 114); color: rgb(0, 0, 0); display: none;" />
     <uie:ObjectField label="Binding" name="viewmodel" binding-path="viewmodel" type="Starter.ViewModel.ViewModel, Starter.MVVM" />
-    <ui:TextField picking-mode="Ignore" label="Prefix Path" name="path" binding-path="prefixPath" />
+    <uie:PropertyField name="prefixPath" binding-path="prefixPath" />
     <ui:Toggle label="Find in parent" name="findInParent" binding-path="findInParent" />
     <ui:VisualElement style="flex-direction: row;">
         <ui:TextField picking-mode="Ignore" label="Type" name="type" binding-path="typeName" style="flex-grow: 1; flex-wrap: wrap;" />

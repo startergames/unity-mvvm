@@ -10,6 +10,8 @@ public class ViewConditionTypeForStringAttribute : Attribute { }
 
 public class ViewConditionTypeForNumericAttribute : Attribute { }
 
+public class ViewConditionTypeForObject : Attribute { }
+
 public class IfView : View {
     public enum ConditionType {
         None,
@@ -36,6 +38,9 @@ public class IfView : View {
 
         [ViewConditionTypeForString]
         NullOrWhiteSpace,
+        
+        [ViewConditionTypeForObject]
+        IsNull,
     }
 
     public enum LogicalType {

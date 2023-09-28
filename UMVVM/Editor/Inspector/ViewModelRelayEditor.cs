@@ -15,7 +15,6 @@ public class ViewModelRelayEditor : Editor {
 
         var errorLabel           = root.Q<Label>("error");
         var relayProperty        = root.Q<ObjectField>("viewmodel");
-        var prefixProperty       = root.Q<TextField>("path");
         var findInParentProperty = root.Q<Toggle>("findInParent");
         var typeNameProperty     = root.Q<TextField>("type");
         var findTypeButton       = root.Q<Button>("findType");

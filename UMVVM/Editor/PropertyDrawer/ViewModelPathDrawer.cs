@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Attributes;
 using Starter.View;
+using Starter.ViewModel;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -84,13 +85,31 @@ namespace PropertyDrawer {
             return container;
         }
 
-        private IList GetMatchingMembers(SerializedProperty property, string textFieldValue) {
-            var view = property.serializedObject.targetObject as View;
-            if (view?.ViewModel is null) return null;
+        private IList GetMatchingMembers(SerializedProperty property, string path) {
+            Type type;
+            if (property.serializedObject.targetObject is View view) {
+                if (view?.ViewModel is null) return null;
 
-            var type = view.ViewModel.GetType();
+                type       = view.ViewModel.GetType();
+                var prefixPath = view.PrefixPath;
+                if (!string.IsNullOrWhiteSpace(prefixPath)) {
+                    path = string.Join('.', prefixPath, path);
+                }
+            }
+            else if (property.serializedObject.targetObject is ViewModelRelay relay) {
+                if (relay.ViewModel is null) return null;
 
-            var splited = textFieldValue.Split('.');
+                type = relay.ViewModel.GetType();
+                var prefixPath = relay.PrefixPathExceptLast;
+                if (!string.IsNullOrWhiteSpace(prefixPath)) {
+                    path = string.Join('.', prefixPath, path);
+                }
+            }
+            else {
+                return null;
+            }
+
+            var splited = path.Split('.');
             if (splited.Length == 0)
                 return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
                            .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
