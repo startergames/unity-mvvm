@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Attributes;
 using Starter.View;
 using UnityEditor;
@@ -21,7 +22,7 @@ namespace PropertyDrawer {
                 return new Label("ViewModelPath can only be used with strings.");
 
             var view = property.serializedObject.targetObject as View;
-            
+
             // Create a VisualElement that will contain our controls
             var container = new VisualElement();
             container.TrackSerializedObjectValue(property.serializedObject, o => { Reset(property); });
@@ -41,8 +42,8 @@ namespace PropertyDrawer {
             };
             listView.makeItem = () => new Label();
             listView.bindItem = (element, index) => {
-                var label = element as Label;
-                var memberInfo  = (MemberInfo)listView.itemsSource[index];
+                var label      = element as Label;
+                var memberInfo = (MemberInfo)listView.itemsSource[index];
                 var type = memberInfo switch {
                     System.Reflection.PropertyInfo propertyInfo => propertyInfo.PropertyType,
                     System.Reflection.FieldInfo fieldInfo => fieldInfo.FieldType,
@@ -61,15 +62,13 @@ namespace PropertyDrawer {
 
             // Update the ListView items when the TextField receives focus
             _textField.RegisterCallback<FocusInEvent>(evt => {
-                listView.itemsSource   = GetMatchingMembers(property, _textField.value);
+                listView.itemsSource = GetMatchingMembers(property, _textField.value);
                 listView.RefreshItems();
                 listView.style.display = DisplayStyle.Flex;
             });
 
             // Hide the ListView when the TextField loses focus
-            _textField.RegisterCallback<FocusOutEvent>(evt => {
-                listView.style.display = DisplayStyle.None;
-            });
+            _textField.RegisterCallback<FocusOutEvent>(evt => { listView.style.display = DisplayStyle.None; });
 
             // Update the property value when the TextField value changes
             _textField.RegisterValueChangedCallback(evt => {
@@ -100,9 +99,10 @@ namespace PropertyDrawer {
                            .ToList();
 
 
+            var containerRegex = new Regex(@"(?<var>\w+)\[(?<number>[0-9]+)\]|\[""?(?<key>\w+)""?\]");
             for (int i = 0; i < splited.Length; ++i) {
                 var memberName = splited[i];
-                
+
                 if (string.IsNullOrWhiteSpace(memberName)) {
                     return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
                                .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
@@ -110,7 +110,7 @@ namespace PropertyDrawer {
                                .OrderBy(member => member.Name)
                                .ToList();
                 }
-                
+
                 if (i == splited.Length - 1) {
                     return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
                                .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
@@ -120,18 +120,58 @@ namespace PropertyDrawer {
                                .ToList();
                 }
 
-                var memberInfo = type.GetMember(memberName,  BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
-                type = memberInfo switch {
-                    System.Reflection.PropertyInfo propertyInfo => propertyInfo.PropertyType,
-                    System.Reflection.FieldInfo fieldInfo => fieldInfo.FieldType,
-                    _ => null
-                };
+                var m = containerRegex.Match(memberName);
+                if (m.Groups["number"].Success) {
+                    var containerName   = m.Groups["var"].Value;
+                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
+                    type = GetMemberType(containerMember);
+                    if (type.IsArray) {
+                        type = type.GetElementType();
+                    }
+                    else if (type.IsGenericType) {
+                        type = type.GetGenericArguments()[0];
+                    }
+                    else {
+                        return null;
+                    }
+                }
+                else if (m.Groups["key"].Success) {
+                    var containerName   = m.Groups["var"].Value;
+                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
+                    type = GetMemberType(containerMember);
+                    if (type.IsGenericType) {
+                        type = type.GetGenericArguments()[1];
+                    }
+                    else {
+                        return null;
+                    }
+                }
+                else {
+                    var memberInfo = type.GetMember(memberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
+                    type = GetMemberType(memberInfo);
+                }
 
                 if (type == null)
                     return null;
             }
 
             return null;
+        }
+
+        private Type GetMemberType(MemberInfo memberInfo) {
+            return memberInfo switch {
+                PropertyInfo propertyInfo => propertyInfo.PropertyType,
+                FieldInfo fieldInfo => fieldInfo.FieldType,
+                _ => null
+            };
+        }
+
+        private object GetMemberValue(MemberInfo memberInfo, object src) {
+            return memberInfo switch {
+                PropertyInfo property => property.GetValue(src, null),
+                FieldInfo field => field.GetValue(src),
+                _ => null
+            };
         }
 
         private void Reset(SerializedProperty property) { }
