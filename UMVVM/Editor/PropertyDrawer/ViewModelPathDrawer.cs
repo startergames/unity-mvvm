@@ -97,9 +97,11 @@ namespace PropertyDrawer {
                 }
             }
             else if (property.serializedObject.targetObject is ViewModelRelay relay) {
-                if (relay.ViewModel is null) return null;
+                if (relay.ViewModelType is null)
+                    return null;
+                
+                type = relay.ViewModelType;
 
-                type = relay.ViewModel.GetType();
                 var prefixPath = relay.PrefixPathExceptLast;
                 if (!string.IsNullOrWhiteSpace(prefixPath)) {
                     path = string.Join('.', prefixPath, path);

@@ -41,7 +41,7 @@ public class TypeSearchPopup : PopupWindowContent {
             }
         };
         _listView.onItemsChosen += objects => {
-            _onSelected.Invoke(((Type)objects.First()).FullName);
+            _onSelected.Invoke(((Type)objects.First()).AssemblyQualifiedName);
             editorWindow.Close();
         };
 

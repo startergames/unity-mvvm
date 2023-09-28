@@ -8,10 +8,21 @@ namespace Starter.ViewModel {
         private ViewModel viewmodel;
 
         [SerializeField]
+        private string relayTypeInfo;
+
+        [SerializeField]
         [ViewModelPath]
         private string prefixPath;
 
         public ViewModel ViewModel => Reversal(out _);
+
+        public System.Type ViewModelType =>
+            Reversal(out _)?.GetType()
+         ?? (
+                !string.IsNullOrWhiteSpace(relayTypeInfo)
+                    ? System.Type.GetType(relayTypeInfo)
+                    : null
+            );
 
         public string PrefixPath {
             get {
@@ -22,32 +33,25 @@ namespace Starter.ViewModel {
 
         public string PrefixPathExceptLast {
             get {
-                var    parent = viewmodel;
-                string prefix = null;
-                while (parent is ViewModelRelay relay) {
-                    prefix = string.IsNullOrWhiteSpace(prefix)
-                                 ? relay.prefixPath
-                                 : string.Join('.', relay.prefixPath, prefix);
-                    parent = relay.viewmodel;
-                }
-
+                Reversal(out var prefix, true);
                 return prefix;
             }
         }
 
-        private ViewModel Reversal(out string prefix) {
+        private ViewModel Reversal(out string prefix, bool ignoreLastPrefix = false) {
             var parent = viewmodel;
-            prefix = prefixPath;
+            prefix = ignoreLastPrefix ? null : prefixPath;
             while (parent is ViewModelRelay relay) {
-                prefix = relay.prefixPath + "." + prefix;
+                prefix = string.IsNullOrWhiteSpace(prefix)
+                             ? relay.prefixPath
+                             : string.Join('.', relay.prefixPath, prefix);
                 parent = relay.viewmodel;
             }
 
             return parent;
         }
 
-        public bool   findInParent = false;
-        public string typeName;
+        public bool findInParent = false;
 
         public override async Task Initialize() {
             await viewmodel.InitializeAwaiter();
