@@ -31,18 +31,20 @@ namespace PropertyDrawer {
             _logicalTypeField = new PropertyField(_logicalTypeProperty);
             _pathField        = new PropertyField(pathProperty);
             //_typeField        = new PropertyField(typeProperty);
-            _valueField       = new PropertyField(valueProperty);
+            _valueField = new PropertyField(valueProperty);
             var valueField = new TextField("value");
 
             _typeField = new PopupField<IfView.ConditionType>("Type");
             _typeField.RegisterValueChangedCallback(evt => {
                 var e = evt.newValue;
+                typeProperty.enumValueIndex = (int)e;
+                typeProperty.serializedObject.ApplyModifiedProperties();
             });
-            _typeField.BindProperty(typeProperty);
-            
+            _typeField.value = (IfView.ConditionType)typeProperty.enumValueIndex;
+
             _pathField.RegisterValueChangeCallback(evt => {
-                var view         = property.serializedObject.targetObject as View;
-                
+                var view = property.serializedObject.targetObject as View;
+
                 var pathProperty = property.FindPropertyRelative(nameof(IfView.Condition.path));
                 var obj          = view.GetPropertyType(pathProperty.stringValue);
                 if (obj is null) {
@@ -60,28 +62,35 @@ namespace PropertyDrawer {
                         types.AddRange(GetAttributedEnums<ViewConditionTypeForStringAttribute>());
                     }
 
-                    if (obj.IsClass) {
+                    // Check if obj is a nullable type and get its underlying type
+                    var underlyingType = Nullable.GetUnderlyingType(obj);
+                    if (underlyingType != null) {
+                        obj = underlyingType; // Update obj to its underlying type for further checks
+                    }
+
+                    if (obj.IsClass || underlyingType != null) {
                         types.AddRange(GetAttributedEnums<ViewConditionTypeForObject>());
                     }
-                    
+
                     // If obj convert to numeric type
                     var typecode = Type.GetTypeCode(obj);
-                    if (typecode == TypeCode.Byte ||
-                        typecode == TypeCode.SByte ||
-                        typecode == TypeCode.UInt16 ||
-                        typecode == TypeCode.UInt32 ||
-                        typecode == TypeCode.UInt64 ||
-                        typecode == TypeCode.Int16 ||
-                        typecode == TypeCode.Int32 ||
-                        typecode == TypeCode.Int64 ||
-                        typecode == TypeCode.Decimal ||
-                        typecode == TypeCode.Double ||
-                        typecode == TypeCode.Single) {
+                    if (typecode
+                        is TypeCode.Byte
+                        or TypeCode.SByte
+                        or TypeCode.UInt16
+                        or TypeCode.UInt32
+                        or TypeCode.UInt64
+                        or TypeCode.Int16
+                        or TypeCode.Int32
+                        or TypeCode.Int64
+                        or TypeCode.Decimal
+                        or TypeCode.Double
+                        or TypeCode.Single) {
                         types.AddRange(GetAttributedEnums<ViewConditionTypeForNumericAttribute>());
                     }
+
                     _typeField.choices = types;
-                    
-                    
+
                     _typeField.SetEnabled(true);
                     _valueField.SetEnabled(true);
                 }
@@ -101,13 +110,13 @@ namespace PropertyDrawer {
             var enumType = typeof(IfView.ConditionType);
             return Enum.GetValues(enumType)
                        .Cast<IfView.ConditionType>()
-                       .Where(x => enumType.GetField(x.ToString()).GetCustomAttribute<T>() != null )
+                       .Where(x => enumType.GetField(x.ToString()).GetCustomAttribute<T>() != null)
                        .ToList();
         }
 
         private void Reset(SerializedProperty property, VisualElement container) {
             var view = property.serializedObject.targetObject as View;
-            if (view?.ViewModel is null) {
+            if (view?.ViewModelType is null) {
                 _logicalTypeField.SetEnabled(false);
                 _pathField.SetEnabled(false);
                 _typeField.SetEnabled(false);

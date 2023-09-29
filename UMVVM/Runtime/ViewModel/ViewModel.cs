@@ -5,6 +5,7 @@ namespace Starter.ViewModel {
     public abstract class ViewModel : MonoBehaviour {
         private         bool IsInitialized { get; set; }
         public abstract Task Initialize();
+        public abstract void Finalize();
 
         public async Task InitializeAwaiter() {
             while (!IsInitialized)
@@ -14,6 +15,10 @@ namespace Starter.ViewModel {
         private async void Start() {
             await Initialize();
             IsInitialized = true;
+        }
+        
+        private void OnDestroy() {
+            Finalize();
         }
     }
 }

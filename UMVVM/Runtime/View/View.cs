@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace Starter.View {
         private static readonly Regex containerRegex = new Regex(@"(^[a-zA-Z_]\w*)\[([^\]])\]$", RegexOptions.Compiled);
 
         public ViewModel.ViewModel ViewModel  => GetFullPath(viewmodel, "").obj;
+        public Type                 ViewModelType => viewmodel is ViewModelRelay relay ? relay.ViewModelType : viewmodel?.GetType();
         public string              PrefixPath => GetFullPath(viewmodel, "").path;
 
         protected Task WaitViewModelInitialized() {
@@ -26,11 +28,12 @@ namespace Starter.View {
         }
 
         public Type GetPropertyType(string path) {
-            var (vm, fullpath) = GetFullPath(viewmodel, path);
-            if (vm == null) return null;
+            if (string.IsNullOrWhiteSpace(path)) return null;
+            var (_, fullpath) = GetFullPath(viewmodel, path);
+            var type = ViewModelType;
+            if (type == null) return null;
             
             var memberParts = fullpath.Split('.');
-            var type        = vm.GetType();
             foreach (var part in memberParts) {
                 var match = containerRegex.Match(part);
 
@@ -39,7 +42,8 @@ namespace Starter.View {
                     var key        = match.Groups[2].Value;
                     var index      = int.Parse(key);
 
-                    var member = type.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase)[0];
+                    var member = type.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
+                    if (member == null) return null;
                     
                     var memberType = member switch {
                         PropertyInfo property => property.PropertyType,
@@ -57,7 +61,9 @@ namespace Starter.View {
                         type = memberType;
                 }
                 else {
-                    var member = type.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase)[0];
+                    var members = type.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                    if (!members.Any()) return null;
+                    var member = members.First();
                     type = member switch {
                         PropertyInfo property => property.PropertyType,
                         FieldInfo field => field.FieldType,
@@ -95,13 +101,18 @@ namespace Starter.View {
                     currentObject = GetMemberValue(member, currentObject);
 
                     if (currentObject is IList list)
-                        currentObject = list[index];
-                    else if (currentObject is IDictionary dictionary)
-                        currentObject = dictionary[Convert.ChangeType(key, dictionary.GetType().GetGenericArguments()[0])];
+                        currentObject = list.Count <= index ? null : list[index];
+                    else if (currentObject is IDictionary dictionary) {
+                        var typedKey = Convert.ChangeType(key, dictionary.GetType().GetGenericArguments()[0]);
+                        currentObject = dictionary.Contains(typedKey) ? dictionary[typedKey] : null;
+                    }
                 }
                 else {
-                    var member = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase)[0];
-                    currentObject = GetMemberValue(member, currentObject);
+                    var members = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                    if (!members.Any())
+                        return null;
+                    
+                    currentObject = GetMemberValue(members.First(), currentObject);
                 }
             }
 

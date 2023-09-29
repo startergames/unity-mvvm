@@ -38,7 +38,7 @@ public class IfView : View {
 
         [ViewConditionTypeForString]
         NullOrWhiteSpace,
-        
+
         [ViewConditionTypeForObject]
         IsNull,
     }
@@ -54,9 +54,11 @@ public class IfView : View {
 
     [Serializable]
     public class Condition {
-        public LogicalType   logicalType = LogicalType.Or;
+        public LogicalType logicalType = LogicalType.Or;
+
         [ViewModelPath]
-        public string        path;
+        public string path;
+
         public ConditionType type = ConditionType.None;
         public string        value;
     }
@@ -70,18 +72,28 @@ public class IfView : View {
         var result = false;
         foreach (var condition in conditions) {
             var value = GetPropertyValue(condition.path);
-            var conditionResult = condition.type switch {
-                ConditionType.Equal => Convert.ChangeType(condition.value, value.GetType()).Equals(value),
-                ConditionType.NotEqual => !Convert.ChangeType(condition.value, value.GetType()).Equals(value),
-                ConditionType.GreaterThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) < 0,
-                ConditionType.GreaterOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) <= 0,
-                ConditionType.LessThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) > 0,
-                ConditionType.LessOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) >= 0,
-                ConditionType.EqualIgnoreCase => string.Equals(value as string, condition.value, StringComparison.OrdinalIgnoreCase),
-                ConditionType.NullOrEmpty => string.IsNullOrEmpty(value as string),
-                ConditionType.NullOrWhiteSpace => string.IsNullOrWhiteSpace(value as string),
-                _ => false
-            };
+            var conditionResult = value is null
+                                      ? condition.type switch {
+                                          ConditionType.Equal => string.IsNullOrWhiteSpace(condition.value) || condition.value.Equals("null", StringComparison.OrdinalIgnoreCase),
+                                          ConditionType.NotEqual => !string.IsNullOrWhiteSpace(condition.value) && !condition.value.Equals("null", StringComparison.OrdinalIgnoreCase),
+                                          ConditionType.IsNull => true,
+                                          ConditionType.NullOrEmpty => true,
+                                          ConditionType.NullOrWhiteSpace => true,
+                                          _ => false,
+                                      }
+                                      : condition.type switch {
+                                          ConditionType.Equal => Convert.ChangeType(condition.value, value.GetType()).Equals(value),
+                                          ConditionType.NotEqual => !Convert.ChangeType(condition.value, value.GetType()).Equals(value),
+                                          ConditionType.GreaterThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) < 0,
+                                          ConditionType.GreaterOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) <= 0,
+                                          ConditionType.LessThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) > 0,
+                                          ConditionType.LessOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) >= 0,
+                                          ConditionType.EqualIgnoreCase => string.Equals(value as string, condition.value, StringComparison.OrdinalIgnoreCase),
+                                          ConditionType.NullOrEmpty => string.IsNullOrEmpty(value as string),
+                                          ConditionType.NullOrWhiteSpace => string.IsNullOrWhiteSpace(value as string),
+                                          ConditionType.IsNull => value == null,
+                                          _ => false
+                                      };
 
             result = condition.logicalType switch {
                 LogicalType.Or when conditionResult => true,

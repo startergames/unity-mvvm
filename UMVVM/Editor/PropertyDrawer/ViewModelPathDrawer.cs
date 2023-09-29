@@ -88,9 +88,9 @@ namespace PropertyDrawer {
         private IList GetMatchingMembers(SerializedProperty property, string path) {
             Type type;
             if (property.serializedObject.targetObject is View view) {
-                if (view?.ViewModel is null) return null;
+                if (view.ViewModelType is null) return null;
 
-                type       = view.ViewModel.GetType();
+                type       = view.ViewModelType;
                 var prefixPath = view.PrefixPath;
                 if (!string.IsNullOrWhiteSpace(prefixPath)) {
                     path = string.Join('.', prefixPath, path);
@@ -101,7 +101,6 @@ namespace PropertyDrawer {
                     return null;
                 
                 type = relay.ViewModelType;
-
                 var prefixPath = relay.PrefixPathExceptLast;
                 if (!string.IsNullOrWhiteSpace(prefixPath)) {
                     path = string.Join('.', prefixPath, path);
@@ -144,7 +143,10 @@ namespace PropertyDrawer {
                 var m = containerRegex.Match(memberName);
                 if (m.Groups["number"].Success) {
                     var containerName   = m.Groups["var"].Value;
-                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
+                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
+                    if (containerMember == null)
+                        return null;
+                    
                     type = GetMemberType(containerMember);
                     if (type.IsArray) {
                         type = type.GetElementType();
@@ -158,7 +160,10 @@ namespace PropertyDrawer {
                 }
                 else if (m.Groups["key"].Success) {
                     var containerName   = m.Groups["var"].Value;
-                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
+                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
+                    if (containerMember == null)
+                        return null;
+                    
                     type = GetMemberType(containerMember);
                     if (type.IsGenericType) {
                         type = type.GetGenericArguments()[1];
@@ -168,7 +173,10 @@ namespace PropertyDrawer {
                     }
                 }
                 else {
-                    var memberInfo = type.GetMember(memberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).First();
+                    var memberInfo = type.GetMember(memberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
+                    if (memberInfo == null)
+                        return null;
+                    
                     type = GetMemberType(memberInfo);
                 }
 

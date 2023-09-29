@@ -19,6 +19,9 @@ namespace Starter.ViewModel {
         public System.Type ViewModelType =>
             Reversal(out _)?.GetType()
          ?? (
+                viewmodel is ViewModelRelay relay
+                    ? relay.ViewModelType
+                    :
                 !string.IsNullOrWhiteSpace(relayTypeInfo)
                     ? System.Type.GetType(relayTypeInfo)
                     : null
@@ -55,6 +58,9 @@ namespace Starter.ViewModel {
 
         public override async Task Initialize() {
             await viewmodel.InitializeAwaiter();
+        }
+
+        public override void Finalize() {
         }
     }
 }
