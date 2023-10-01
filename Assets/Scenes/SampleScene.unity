@@ -123,6 +123,56 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &24927851
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 24927853}
+  - component: {fileID: 24927852}
+  m_Layer: 0
+  m_Name: CallCommand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &24927852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24927851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d8e4cc13a41457db2f75e42a3543415, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  viewModel: {fileID: 346360676}
+  methodData: 
+  parameters: []
+  references:
+    version: 2
+    RefIds: []
+--- !u!4 &24927853
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24927851}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 598.77264, y: 265.60565, z: -2.026302}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &346360674
 GameObject:
   m_ObjectHideFlags: 0
@@ -162,14 +212,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewmodel: {fileID: 346360676}
   tokens:
-  - rid: 5604479662641120248
-  - rid: 5604479662641120249
-  - rid: 5604479662641120250
-  - rid: 5604479662641120251
-  - rid: 5604479662641120252
-  - rid: 5604479662641120253
-  - rid: 5604479662641120254
-  - rid: 5604479662641120255
+  - rid: 5604479729801363480
+  - rid: 5604479729801363481
+  - rid: 5604479729801363482
+  - rid: 5604479729801363483
+  - rid: 5604479729801363484
+  - rid: 5604479729801363485
+  - rid: 5604479729801363486
+  - rid: 5604479729801363487
   text: 'test : {Temp.TestDouble},
 
     arr : {Temp.TestArray[2]}
@@ -182,44 +232,44 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5604479662641120248
+    - rid: 5604479729801363480
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: 'test : '
-    - rid: 5604479662641120249
+    - rid: 5604479729801363481
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestDouble
         format: 
-    - rid: 5604479662641120250
+    - rid: 5604479729801363482
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: ',
 
           arr : '
-    - rid: 5604479662641120251
+    - rid: 5604479729801363483
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestArray[2]
         format: 
-    - rid: 5604479662641120252
+    - rid: 5604479729801363484
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: '
 
           list : '
-    - rid: 5604479662641120253
+    - rid: 5604479729801363485
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestList[3]
         format: 
-    - rid: 5604479662641120254
+    - rid: 5604479729801363486
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: '
 
           dict : '
-    - rid: 5604479662641120255
+    - rid: 5604479729801363487
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestDict[4]
@@ -937,3 +987,4 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 346360680}
   - {fileID: 2034728186}
+  - {fileID: 24927853}

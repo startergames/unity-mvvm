@@ -30,6 +30,7 @@ public class TypeSearchPopup : PopupWindowContent {
 
         var searchField = new TextField();
         searchField.RegisterValueChangedCallback(evt => FilterTypes(evt.newValue));
+        searchField.Focus();
 
         _listView = new ListView() {
             itemsSource     = types,

@@ -1,4 +1,5 @@
-﻿using Attributes;
+﻿using System;
+using Attributes;
 
 namespace Starter.View {
     public class DataView : View {
@@ -9,8 +10,20 @@ namespace Starter.View {
 
         public async void Start() {
             await WaitViewModelInitialized();
+            SetData();
+        }
+
+        private void SetData() {
             var value = GetPropertyValue(path);
             setter.Set(value);
+        }
+
+        protected override void OnPathRegistration() {
+            RegistePath(path);
+        }
+        
+        public override void OnPropertyChanged(string propertyName) {
+            SetData();
         }
     }
 }

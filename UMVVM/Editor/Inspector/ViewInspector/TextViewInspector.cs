@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 [CustomEditor(typeof(TextView))]
 public class TextViewInspector : Editor {
     public override VisualElement CreateInspectorGUI() {
-        var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.startergames.mvvm/Editor/Inspector/TextViewInspector.uxml");
+        var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.startergames.mvvm/Editor/Inspector/ViewInspector/TextViewInspector.uxml");
 
         var root = visualTree.CloneTree();
 

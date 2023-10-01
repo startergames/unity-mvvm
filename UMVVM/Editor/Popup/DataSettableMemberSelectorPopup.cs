@@ -30,6 +30,7 @@ namespace Popup {
 
             var searchField = new TextField();
             searchField.RegisterValueChangedCallback(evt => FilterMembers(evt.newValue));
+            searchField.Focus();
 
             _listView = new ListView {
                 itemsSource     = _filteredMembers,

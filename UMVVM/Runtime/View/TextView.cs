@@ -25,5 +25,18 @@ namespace Starter.View {
         public void TokenizeText() {
             TokenizeText(text);
         }
+
+        public override void OnPropertyChanged(string propertyName) {
+            UpdateText();
+        }
+
+        protected override void OnPathRegistration() {
+            TokenizeText();
+            foreach (var token in tokens) {
+                if (token is PropertyToken propertyToken) {
+                    RegistePath(propertyToken.path);
+                }
+            }
+        }
     }
 }

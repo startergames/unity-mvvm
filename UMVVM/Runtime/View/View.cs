@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -13,11 +14,39 @@ namespace Starter.View {
         [SerializeField]
         private ViewModel.ViewModel viewmodel;
 
-        private static readonly Regex containerRegex = new Regex(@"(^[a-zA-Z_]\w*)\[([^\]])\]$", RegexOptions.Compiled);
+        private static readonly Regex containerRegex = new(@"(^[a-zA-Z_]\w*)\[([^\]])\]$", RegexOptions.Compiled);
 
-        public ViewModel.ViewModel ViewModel  => GetFullPath(viewmodel, "").obj;
-        public Type                 ViewModelType => viewmodel is ViewModelRelay relay ? relay.ViewModelType : viewmodel?.GetType();
-        public string              PrefixPath => GetFullPath(viewmodel, "").path;
+        public ViewModel.ViewModel ViewModel     => GetFullPath(viewmodel, "").obj;
+        public Type                ViewModelType => viewmodel is ViewModelRelay relay ? relay.ViewModelType : viewmodel?.GetType();
+        public string              PrefixPath    => GetFullPath(viewmodel, "").path;
+        
+        private readonly List<string>    paths      = new();
+        private readonly HashSet<string> pathTokens = new();
+
+        private void Awake() {
+            OnPathRegistration();
+            ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
+        }
+
+        private void OnDestroy() {
+            ViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
+        }
+
+        protected abstract void OnPathRegistration();
+        protected void RegistePath(string path) {
+            if (paths.Contains(path)) return;
+            paths.Add(path);
+            pathTokens.UnionWith(path.Split('.'));
+        }
+
+        private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if (!paths.Any(r => r.Contains(e.PropertyName, StringComparison.OrdinalIgnoreCase)))
+                return;
+            
+            OnPropertyChanged(e.PropertyName);
+        }
+
+        public abstract void OnPropertyChanged(string propertyName);
 
         protected Task WaitViewModelInitialized() {
             return viewmodel.InitializeAwaiter();
@@ -32,7 +61,7 @@ namespace Starter.View {
             var (_, fullpath) = GetFullPath(viewmodel, path);
             var type = ViewModelType;
             if (type == null) return null;
-            
+
             var memberParts = fullpath.Split('.');
             foreach (var part in memberParts) {
                 var match = containerRegex.Match(part);
@@ -44,15 +73,15 @@ namespace Starter.View {
 
                     var member = type.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
                     if (member == null) return null;
-                    
+
                     var memberType = member switch {
                         PropertyInfo property => property.PropertyType,
                         FieldInfo field => field.FieldType,
                         _ => null
                     };
-                    
+
                     if (memberType == null) return null;
-                    
+
                     if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(List<>))
                         type = memberType.GetGenericArguments()[0];
                     else if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
@@ -111,7 +140,7 @@ namespace Starter.View {
                     var members = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
                     if (!members.Any())
                         return null;
-                    
+
                     currentObject = GetMemberValue(members.First(), currentObject);
                 }
             }

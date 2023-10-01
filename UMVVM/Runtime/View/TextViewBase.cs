@@ -31,7 +31,7 @@ namespace Starter.View {
 
         [SerializeField, HideInInspector]
         [SerializeReference]
-        private List<IToken> tokens;
+        protected List<IToken> tokens = new();
 
         public void TokenizeText(string text) {
             tokens.Clear();

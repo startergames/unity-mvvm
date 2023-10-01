@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Attributes;
 using Starter.View;
 using UnityEngine;
@@ -65,6 +66,16 @@ public class IfView : View {
 
     public async void Start() {
         await WaitViewModelInitialized();
+        UpdateView();
+    }
+
+    protected override void OnPathRegistration() {
+        foreach (var condition in conditions) {
+            RegistePath(condition.path);
+        }
+    }
+
+    public override void OnPropertyChanged(string propertyName) {
         UpdateView();
     }
 

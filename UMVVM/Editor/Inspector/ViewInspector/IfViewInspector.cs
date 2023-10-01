@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 [CustomEditor(typeof(IfView))]
 public class IfViewInspector : Editor {
     public override VisualElement CreateInspectorGUI() {
-        var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.startergames.mvvm/Editor/Inspector/IfViewInspector.uxml");
+        var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.startergames.mvvm/Editor/Inspector/ViewInspector/IfViewInspector.uxml");
 
         var root = visualTree.CloneTree();
 
