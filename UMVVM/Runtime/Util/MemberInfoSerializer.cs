@@ -35,7 +35,7 @@ namespace Starter.Util{
                 case MemberTypes.Method:
                     if (parts.Length == 4) {
                         var parameterTypeNames = parts[3].Split('#');
-                        var parameterTypes     = parameterTypeNames.Select(Type.GetType).ToArray();
+                        var parameterTypes     = parameterTypeNames.Select(Type.GetType).Where(r => r != null).ToArray();
                         return type.GetMethod(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, parameterTypes, null);
                     }
                     return type.GetMethod(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);

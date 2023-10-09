@@ -3,11 +3,12 @@ using UnityEngine;
 
 namespace Attributes {
     public class ViewModelPathAttribute : PropertyAttribute {
-        private int depth;
-        private Type type;
-        public ViewModelPathAttribute(int depth = 0, Type type = null) {
-            this.depth = depth;
-            this.type  = type;
+        public Type   type   { get; }
+        public string member { get; }
+
+        public ViewModelPathAttribute(string member = null, Type type = null) {
+            this.type   = type;
+            this.member = member;
         }
     }
 }

@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Starter.ViewModel {
     public abstract class ViewModel : MonoBehaviour, INotifyPropertyChanged {
-        private         bool IsInitialized { get; set; }
-        public abstract Task Initialize();
-        public abstract void Finalize();
+
+        public                  bool  IsInitialized { get; private set; }
+        public abstract         Task  Initialize();
+        public abstract         void  Finalize();
 
         public async Task InitializeAwaiter() {
             while (!IsInitialized)
@@ -37,5 +39,6 @@ namespace Starter.ViewModel {
             OnPropertyChanged(propertyName);
             return true;
         }
+        
     }
 }

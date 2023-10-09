@@ -15,7 +15,9 @@ using UnityEngine.UIElements;
 namespace PropertyDrawer {
     [CustomPropertyDrawer(typeof(ViewModelPathAttribute))]
     public class ViewModelPathDrawer : UnityEditor.PropertyDrawer {
-        private TextField _textField;
+        private                 TextField _textField;
+        private static readonly Regex     ContainerRegex = new Regex(@"(?<var>\w+)\[(?<number>[0-9]+)\]|\[""?(?<key>\w+)""?\]");
+        private static readonly Regex     TokenizeRegex  = new Regex(@"(?<dot>\.)?(?<var>\w+)|(?<dot>\.)?(?<index>\[[0-9]+\])|(?<dot>\.)?(?<key>\[""?\w+""?\])|(?<dot>\.)", RegexOptions.Compiled);
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property) {
             // Ensure the property is a string
@@ -52,14 +54,6 @@ namespace PropertyDrawer {
                 };
                 label.text = $"{memberInfo.Name} ({type.Name})";
             };
-            // _listView.onItemsChosen += items => {
-            //     var memberInfo = (MemberInfo)items.First();
-            //     var path       = _textField.value;
-            //     var lastDot = path.LastIndexOf('.');
-            //     var prefixPath = lastDot == -1 ? "" : path.Substring(0, lastDot);
-            //     _textField.value = prefixPath == "" ? memberInfo.Name : $"{prefixPath}.{memberInfo.Name}";
-            //     _textField.Focus();
-            // };
 
             // Update the ListView items when the TextField receives focus
             _textField.RegisterCallback<FocusInEvent>(evt => {
@@ -87,118 +81,113 @@ namespace PropertyDrawer {
 
         private IList GetMatchingMembers(SerializedProperty property, string path) {
             Type type;
+            var  viewModelPathAttribute = (ViewModelPathAttribute)attribute;
             if (property.serializedObject.targetObject is View view) {
                 if (view.ViewModelType is null) return null;
 
-                type       = view.ViewModelType;
+                type = view.ViewModelType;
                 var prefixPath = view.PrefixPath;
                 if (!string.IsNullOrWhiteSpace(prefixPath)) {
                     path = string.Join('.', prefixPath, path);
                 }
             }
             else if (property.serializedObject.targetObject is ViewModelRelay relay) {
-                if (relay.ViewModelType is null)
+                type = GetViewModelTypeAndPath(relay, ref path);
+                if (type == null)
+                    return null;
+            }
+            else if (!string.IsNullOrEmpty(viewModelPathAttribute.member)) {
+                var siblingPropertyPath = property.propertyPath.Substring(0, property.propertyPath.LastIndexOf('.')) + "." + viewModelPathAttribute.member;
+                var siblingProperty     = property.serializedObject.FindProperty(siblingPropertyPath);
+                if (siblingProperty == null)
+                    return null;
+
+                var siblingValue = siblingProperty.objectReferenceValue;
+                if (siblingValue is not ViewModel viewModel)
                     return null;
                 
-                type = relay.ViewModelType;
-                var prefixPath = relay.PrefixPathExceptLast;
-                if (!string.IsNullOrWhiteSpace(prefixPath)) {
-                    path = string.Join('.', prefixPath, path);
+                if(viewModel is ViewModelRelay viewModelRelay) {
+                    type = GetViewModelTypeAndPath(viewModelRelay, ref path, false);
+                    if (type == null)
+                        return null;
+                }
+                else {
+                    type = viewModel.GetType();
                 }
             }
             else {
                 return null;
             }
 
-            var splited = path.Split('.');
-            if (splited.Length == 0)
-                return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                           .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
-                           .Where(member => member.MemberType is MemberTypes.Property or MemberTypes.Field)
-                           .OrderBy(member => member.Name)
-                           .ToList();
+            var matches = TokenizeRegex.Matches(path);
+            for (int i = 0; i < matches.Count(); ++i) {
+                var m      = matches[i];
+                var isLast = i == matches.Count() - 1;
 
-
-            var containerRegex = new Regex(@"(?<var>\w+)\[(?<number>[0-9]+)\]|\[""?(?<key>\w+)""?\]");
-            for (int i = 0; i < splited.Length; ++i) {
-                var memberName = splited[i];
-
-                if (string.IsNullOrWhiteSpace(memberName)) {
-                    return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                               .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
-                               .Where(member => member.MemberType is MemberTypes.Property or MemberTypes.Field)
-                               .OrderBy(member => member.Name)
-                               .ToList();
-                }
-
-                if (i == splited.Length - 1) {
-                    return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                               .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
-                               .Where(member => member.MemberType is MemberTypes.Property or MemberTypes.Field)
-                               .Where(member => member.Name.Contains(memberName, StringComparison.OrdinalIgnoreCase))
-                               .OrderBy(member => member.Name)
-                               .ToList();
-                }
-
-                var m = containerRegex.Match(memberName);
-                if (m.Groups["number"].Success) {
-                    var containerName   = m.Groups["var"].Value;
-                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
-                    if (containerMember == null)
-                        return null;
-                    
-                    type = GetMemberType(containerMember);
-                    if (type.IsArray) {
-                        type = type.GetElementType();
-                    }
-                    else if (type.IsGenericType) {
-                        type = type.GetGenericArguments()[0];
+                if (m.Groups["var"].Success) {
+                    var memberName = m.Groups["var"].Value;
+                    if (!isLast) {
+                        var memberInfo = type.GetMember(memberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
+                        if (memberInfo == null)
+                            return null;
+                        type = GetMemberType(memberInfo);
                     }
                     else {
-                        return null;
+                        return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                                   .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
+                                   .Where(member => member.MemberType is MemberTypes.Property or MemberTypes.Field)
+                                   .Where(member => member.Name.Contains(memberName, StringComparison.OrdinalIgnoreCase))
+                                   .OrderBy(member => member.Name)
+                                   .ToList();
                     }
+                }
+                else if (m.Groups["index"].Success) {
+                    type = type switch {
+                        { IsArray: true } => type.GetElementType(),
+                        { IsGenericType: true } => type.GetGenericArguments()[0],
+                        _ => null
+                    };
                 }
                 else if (m.Groups["key"].Success) {
-                    var containerName   = m.Groups["var"].Value;
-                    var containerMember = type.GetMember(containerName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
-                    if (containerMember == null)
-                        return null;
-                    
-                    type = GetMemberType(containerMember);
-                    if (type.IsGenericType) {
-                        type = type.GetGenericArguments()[1];
-                    }
-                    else {
-                        return null;
-                    }
+                    type = type.IsGenericType ? type.GetGenericArguments()[1] : null;
                 }
-                else {
-                    var memberInfo = type.GetMember(memberName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
-                    if (memberInfo == null)
-                        return null;
-                    
-                    type = GetMemberType(memberInfo);
+                else if (m.Groups["dot"].Success && isLast) {
+                    break;
                 }
 
                 if (type == null)
                     return null;
             }
 
-            return null;
+            return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                       .Where(member => member.DeclaringType.Assembly != typeof(MonoBehaviour).Assembly)
+                       .Where(member => member.MemberType is MemberTypes.Property or MemberTypes.Field)
+                       .OrderBy(member => member.Name)
+                       .ToList();
+        }
+
+        private static Type GetViewModelTypeAndPath(ViewModelRelay relay, ref string path, bool exceptLast = true) {
+            if (relay.ViewModelType is null)
+                return null;
+
+            var type       = relay.ViewModelType;
+            var prefixPath = exceptLast ? relay.PrefixPathExceptLast : relay.PrefixPath;
+            if (!string.IsNullOrWhiteSpace(prefixPath)) {
+                if (path.StartsWith('[')) {
+                    path = prefixPath + path;
+                }
+                else {
+                    path = string.Join('.', prefixPath, path);
+                }
+            }
+
+            return type;
         }
 
         private Type GetMemberType(MemberInfo memberInfo) {
             return memberInfo switch {
                 PropertyInfo propertyInfo => propertyInfo.PropertyType,
                 FieldInfo fieldInfo => fieldInfo.FieldType,
-                _ => null
-            };
-        }
-
-        private object GetMemberValue(MemberInfo memberInfo, object src) {
-            return memberInfo switch {
-                PropertyInfo property => property.GetValue(src, null),
-                FieldInfo field => field.GetValue(src),
                 _ => null
             };
         }

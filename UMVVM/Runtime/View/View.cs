@@ -6,161 +6,61 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ExtensionMethod;
 using Starter.ViewModel;
 using UnityEngine;
+using Util;
 
 namespace Starter.View {
     public abstract class View : MonoBehaviour {
-        [SerializeField]
-        private ViewModel.ViewModel viewmodel;
+        public ViewModel.ViewModel viewmodel;
 
-        private static readonly Regex containerRegex = new(@"(^[a-zA-Z_]\w*)\[([^\]])\]$", RegexOptions.Compiled);
-
-        public ViewModel.ViewModel ViewModel     => GetFullPath(viewmodel, "").obj;
+        public ViewModel.ViewModel ViewModel     => viewmodel is ViewModelRelay relay ? relay.ViewModel : viewmodel;
         public Type                ViewModelType => viewmodel is ViewModelRelay relay ? relay.ViewModelType : viewmodel?.GetType();
-        public string              PrefixPath    => GetFullPath(viewmodel, "").path;
-        
+        public string              PrefixPath    => viewmodel is ViewModelRelay relay ? relay.PrefixPath : "";
+
         private readonly List<string>    paths      = new();
         private readonly HashSet<string> pathTokens = new();
+        public           bool            IsInitialized { get; private set; } = false;
 
         private void Awake() {
             OnPathRegistration();
-            ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
+            viewmodel.PropertyChanged += ViewModelOnPropertyChanged;
+            IsInitialized             =  true;
         }
 
         private void OnDestroy() {
-            ViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
-        }
+            viewmodel.PropertyChanged -= ViewModelOnPropertyChanged;
+        } 
 
         protected abstract void OnPathRegistration();
+
         protected void RegistePath(string path) {
+            path = viewmodel.GetFullPath(path);
             if (paths.Contains(path)) return;
             paths.Add(path);
             pathTokens.UnionWith(path.Split('.'));
         }
 
         private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e) {
-            if (!paths.Any(r => r.Contains(e.PropertyName, StringComparison.OrdinalIgnoreCase)))
-                return;
-            
+            if (!IsInitialized) return;
             OnPropertyChanged(e.PropertyName);
         }
 
         public abstract void OnPropertyChanged(string propertyName);
 
-        protected Task WaitViewModelInitialized() {
-            return viewmodel.InitializeAwaiter();
+        protected async Task WaitViewModelInitialized() {
+            await viewmodel.InitializeAwaiter();
+            while(!IsInitialized) await Task.Delay(10);
         }
 
         public object GetPropertyValue(string path) {
-            return GetPropertyValue(viewmodel, path);
-        }
-
-        public Type GetPropertyType(string path) {
-            if (string.IsNullOrWhiteSpace(path)) return null;
-            var (_, fullpath) = GetFullPath(viewmodel, path);
-            var type = ViewModelType;
-            if (type == null) return null;
-
-            var memberParts = fullpath.Split('.');
-            foreach (var part in memberParts) {
-                var match = containerRegex.Match(part);
-
-                if (match.Success) {
-                    var memberName = match.Groups[1].Value;
-                    var key        = match.Groups[2].Value;
-                    var index      = int.Parse(key);
-
-                    var member = type.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).FirstOrDefault();
-                    if (member == null) return null;
-
-                    var memberType = member switch {
-                        PropertyInfo property => property.PropertyType,
-                        FieldInfo field => field.FieldType,
-                        _ => null
-                    };
-
-                    if (memberType == null) return null;
-
-                    if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(List<>))
-                        type = memberType.GetGenericArguments()[0];
-                    else if (memberType.IsGenericType && memberType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
-                        type = memberType.GetGenericArguments()[1];
-                    else
-                        type = memberType;
-                }
-                else {
-                    var members = type.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                    if (!members.Any()) return null;
-                    var member = members.First();
-                    type = member switch {
-                        PropertyInfo property => property.PropertyType,
-                        FieldInfo field => field.FieldType,
-                        _ => null
-                    };
-                }
-            }
-
-            return type;
+            return viewmodel.GetPropertyValue(path);
         }
 
         public T GetPropertyValue<T>(string path) where T : class {
-            return GetPropertyValue(viewmodel, path) as T;
+            return viewmodel.GetPropertyValue(path) as T;
         }
 
-        private static object GetPropertyValue(ViewModel.ViewModel viewModel, string path) {
-            (viewModel, path) = GetFullPath(viewModel, path);
-            object currentObject = viewModel;
-            if (currentObject == null || string.IsNullOrEmpty(path)) return null;
-
-            var memberParts = path.Split('.');
-
-            foreach (var part in memberParts) {
-                if (currentObject == null) return null;
-
-                var memberType = currentObject.GetType();
-                var match      = containerRegex.Match(part);
-
-                if (match.Success) {
-                    var memberName = match.Groups[1].Value;
-                    var key        = match.Groups[2].Value;
-                    var index      = int.Parse(key);
-
-                    var member = memberType.GetMember(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase)[0];
-                    currentObject = GetMemberValue(member, currentObject);
-
-                    if (currentObject is IList list)
-                        currentObject = list.Count <= index ? null : list[index];
-                    else if (currentObject is IDictionary dictionary) {
-                        var typedKey = Convert.ChangeType(key, dictionary.GetType().GetGenericArguments()[0]);
-                        currentObject = dictionary.Contains(typedKey) ? dictionary[typedKey] : null;
-                    }
-                }
-                else {
-                    var members = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                    if (!members.Any())
-                        return null;
-
-                    currentObject = GetMemberValue(members.First(), currentObject);
-                }
-            }
-
-            return currentObject;
-        }
-
-        private static (ViewModel.ViewModel obj, string path) GetFullPath(ViewModel.ViewModel currentObject, string path) {
-            if (currentObject is ViewModelRelay relay)
-                return (relay.ViewModel, string.IsNullOrWhiteSpace(path) ? relay.PrefixPath : string.Join('.', relay.PrefixPath, path));
-
-            return (currentObject, path);
-        }
-
-        private static object GetMemberValue(MemberInfo member, object src) {
-            return member switch {
-                PropertyInfo property => property.GetValue(src, null),
-                FieldInfo field => field.GetValue(src),
-                _ => null
-            };
-        }
     }
 }

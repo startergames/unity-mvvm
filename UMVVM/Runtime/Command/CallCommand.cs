@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Attributes;
+using ExtensionMethod;
 using Starter.Util;
 using Starter.View;
 using Starter.ViewModel;
@@ -12,13 +13,14 @@ namespace Command {
     public class CallCommand : MonoBehaviour {
         [System.Serializable]
         public class Parameter {
-            public View view;
+            public ViewModel viewmodel;
+            public string    type;
 
             [SerializeField]
             [HideInInspector]
             private string name;
 
-            [ViewModelPath]
+            [ViewModelPath(nameof(viewmodel))]
             [SerializeField]
             private string path;
 
@@ -26,19 +28,22 @@ namespace Command {
             [SerializeField]
             private string value;
 
-            public object Value => string.IsNullOrWhiteSpace(path) ? value : view.GetPropertyValue(path);
+            public object Value => string.IsNullOrWhiteSpace(path) ? value : viewmodel.GetPropertyValue(path);
 
             public object GetValue(Type parameterType) {
                 if (string.IsNullOrWhiteSpace(path)) {
                     if (string.IsNullOrWhiteSpace(value)) {
                         return FormatterServices.GetUninitializedObject(parameterType);
                     }
-                    else {
-                        return Convert.ChangeType(this.value, parameterType);
+
+                    if (parameterType.IsEnum) {
+                        return Enum.Parse(parameterType, value);
                     }
+
+                    return Convert.ChangeType(this.value, parameterType);
                 }
 
-                return view.GetPropertyValue(path);
+                return viewmodel.GetPropertyValue(path);
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ExtensionMethod;
 using Popup;
 using Starter.Util;
 using Starter.View;
@@ -63,7 +64,7 @@ namespace PropertyDrawer {
 
             void TargetChanged() {
                 if (property.serializedObject.targetObject is not DataView view) return;
-                _targetType = view.GetPropertyType(view.path);
+                _targetType = view.viewmodel.GetPropertyType(view.path);
 
                 if (_targetType == null) {
                     memberSelectBtn.style.display = DisplayStyle.None;

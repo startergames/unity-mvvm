@@ -5,6 +5,7 @@ using System.Reflection;
 using Command;
 using Popup;
 using Starter.Util;
+using Starter.ViewModel;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -32,13 +33,14 @@ namespace Inspector.CommandInspector {
                     marginLeft = 10
                 }
             };
-            
+
             var memberInfo = MemberInfoSerializer.Deserialize(methodProperty.stringValue);
             methodBtn.text = memberInfo?.Name ?? "Select method";
             methodBtn.clicked += () => {
-                if (viewModelProperty.objectReferenceValue == null) return;
+                if (viewModelProperty.objectReferenceValue is not ViewModel viewModel)
+                    return;
 
-                var type = viewModelProperty.objectReferenceValue.GetType();
+                var type = viewModel is ViewModelRelay relay ? relay.ViewModel.GetType() : viewModel.GetType();
                 PopupWindow.Show(new Rect(Event.current.mousePosition, Vector2.zero),
                     new MethodSelectorPopup(
                         type,
@@ -79,18 +81,26 @@ namespace Inspector.CommandInspector {
                     parametersProperty.arraySize = 1;
                     parametersProperty.serializedObject.ApplyModifiedProperties();
                     var parameterProperty = parametersProperty.GetArrayElementAtIndex(parametersProperty.arraySize - 1);
-                    parametersContainer.Add(new PropertyField(parameterProperty));
-                    parameterProperty.FindPropertyRelative("name").stringValue           = $"{propertyInfo.PropertyType.Name} {propertyInfo.Name}";
-                    parameterProperty.FindPropertyRelative("path").stringValue           = "";
+                    parameterProperty.FindPropertyRelative("name").stringValue = $"{propertyInfo.PropertyType.Name} {propertyInfo.Name}";
+                    parameterProperty.FindPropertyRelative("type").stringValue = propertyInfo.PropertyType.AssemblyQualifiedName;
+                    parameterProperty.serializedObject.ApplyModifiedProperties();
+                    
+                    var propertyField     = new PropertyField();
+                    propertyField.BindProperty(parameterProperty);
+                    parametersContainer.Add(propertyField);
                     break;
                 }
                 case FieldInfo fieldInfo: {
                     parametersProperty.arraySize = 1;
                     parametersProperty.serializedObject.ApplyModifiedProperties();
                     var parameterProperty = parametersProperty.GetArrayElementAtIndex(parametersProperty.arraySize - 1);
-                    parametersContainer.Add(new PropertyField(parameterProperty));
-                    parameterProperty.FindPropertyRelative("name").stringValue           = $"{fieldInfo.FieldType.Name} {fieldInfo.Name}";
-                    parameterProperty.FindPropertyRelative("path").stringValue           = "";
+                    parameterProperty.FindPropertyRelative("name").stringValue = $"{fieldInfo.FieldType.Name} {fieldInfo.Name}";
+                    parameterProperty.FindPropertyRelative("type").stringValue = fieldInfo.FieldType.AssemblyQualifiedName;
+                    parameterProperty.serializedObject.ApplyModifiedProperties();
+                    
+                    var propertyField     = new PropertyField();
+                    propertyField.BindProperty(parameterProperty);
+                    parametersContainer.Add(propertyField);
                     break;
                 }
                 case MethodInfo methodInfo: {
@@ -99,13 +109,19 @@ namespace Inspector.CommandInspector {
                     parametersProperty.serializedObject.ApplyModifiedProperties();
                     for (var i = 0; i < parametersProperty.arraySize; i++) {
                         var parameterProperty = parametersProperty.GetArrayElementAtIndex(i);
-                        parametersContainer.Add(new PropertyField(parameterProperty));
-                        parameterProperty.FindPropertyRelative("name").stringValue           = $"{parameterInfos[i].ParameterType.Name} {parameterInfos[i].Name}";
-                        parameterProperty.FindPropertyRelative("path").stringValue           = "";
+                        parameterProperty.FindPropertyRelative("name").stringValue = $"{parameterInfos[i].ParameterType.Name} {parameterInfos[i].Name}";
+                        parameterProperty.FindPropertyRelative("type").stringValue = parameterInfos[i].ParameterType.AssemblyQualifiedName;
+                        parameterProperty.serializedObject.ApplyModifiedProperties();
+                        
+                        var propertyField     = new PropertyField();
+                        propertyField.BindProperty(parameterProperty);
+                        parametersContainer.Add(propertyField);
                     }
+
                     break;
                 }
             }
+
             parametersContainer.MarkDirtyRepaint();
             return false;
         }

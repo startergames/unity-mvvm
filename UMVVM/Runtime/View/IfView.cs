@@ -80,7 +80,7 @@ public class IfView : View {
     }
 
     private void UpdateView() {
-        var result = false;
+        bool? result = null;
         foreach (var condition in conditions) {
             var value = GetPropertyValue(condition.path);
             var conditionResult = value is null
@@ -93,12 +93,12 @@ public class IfView : View {
                                           _ => false,
                                       }
                                       : condition.type switch {
-                                          ConditionType.Equal => Convert.ChangeType(condition.value, value.GetType()).Equals(value),
-                                          ConditionType.NotEqual => !Convert.ChangeType(condition.value, value.GetType()).Equals(value),
-                                          ConditionType.GreaterThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) < 0,
-                                          ConditionType.GreaterOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) <= 0,
-                                          ConditionType.LessThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) > 0,
-                                          ConditionType.LessOrEqualThan => Convert.ChangeType(condition.value, value.GetType()) is IComparable comparable && comparable.CompareTo(value) >= 0,
+                                          ConditionType.Equal => ChangeType(condition, value).Equals(value),
+                                          ConditionType.NotEqual => !ChangeType(condition, value).Equals(value),
+                                          ConditionType.GreaterThan => ChangeType(condition, value) is IComparable comparable && comparable.CompareTo(value) < 0,
+                                          ConditionType.GreaterOrEqualThan => ChangeType(condition, value) is IComparable comparable && comparable.CompareTo(value) <= 0,
+                                          ConditionType.LessThan => ChangeType(condition, value) is IComparable comparable && comparable.CompareTo(value) > 0,
+                                          ConditionType.LessOrEqualThan => ChangeType(condition, value) is IComparable comparable && comparable.CompareTo(value) >= 0,
                                           ConditionType.EqualIgnoreCase => string.Equals(value as string, condition.value, StringComparison.OrdinalIgnoreCase),
                                           ConditionType.NullOrEmpty => string.IsNullOrEmpty(value as string),
                                           ConditionType.NullOrWhiteSpace => string.IsNullOrWhiteSpace(value as string),
@@ -106,6 +106,11 @@ public class IfView : View {
                                           _ => false
                                       };
 
+            if (result is null) {
+                result = conditionResult;
+                continue;
+            }
+            
             result = condition.logicalType switch {
                 LogicalType.Or when conditionResult => true,
                 LogicalType.And when !conditionResult => false,
@@ -113,11 +118,18 @@ public class IfView : View {
             };
         }
 
-        if (result) {
+        if (result ?? false) {
             onTrue?.Invoke();
         }
         else {
             onFalse?.Invoke();
         }
+    }
+
+    private static object ChangeType(Condition condition, object value) {
+        var conversionType = value.GetType();
+        if (conversionType.IsEnum)
+            return Enum.TryParse(conversionType, condition.value, true, out var enumValue) ? enumValue : null;
+        return Convert.ChangeType(condition.value, conversionType);
     }
 }
