@@ -12,7 +12,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace PropertyDrawer {
+namespace Starter {
     [CustomPropertyDrawer(typeof(ViewModelPathAttribute))]
     public class ViewModelPathDrawer : UnityEditor.PropertyDrawer {
         private                 TextField _textField;
@@ -24,7 +24,7 @@ namespace PropertyDrawer {
             if (property.propertyType != SerializedPropertyType.String)
                 return new Label("ViewModelPath can only be used with strings.");
 
-            var view = property.serializedObject.targetObject as View;
+            var view = property.serializedObject.targetObject as View.View;
 
             // Create a VisualElement that will contain our controls
             var container = new VisualElement();
@@ -82,7 +82,7 @@ namespace PropertyDrawer {
         private IList GetMatchingMembers(SerializedProperty property, string path) {
             Type type;
             var  viewModelPathAttribute = (ViewModelPathAttribute)attribute;
-            if (property.serializedObject.targetObject is View view) {
+            if (property.serializedObject.targetObject is View.View view) {
                 if (view.ViewModelType is null) return null;
 
                 type = view.ViewModelType;
@@ -103,7 +103,7 @@ namespace PropertyDrawer {
                     return null;
 
                 var siblingValue = siblingProperty.objectReferenceValue;
-                if (siblingValue is not ViewModel viewModel)
+                if (siblingValue is not ViewModel.ViewModel viewModel)
                     return null;
                 
                 if(viewModel is ViewModelRelay viewModelRelay) {

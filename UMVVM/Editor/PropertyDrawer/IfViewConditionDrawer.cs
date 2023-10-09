@@ -10,7 +10,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
-namespace PropertyDrawer {
+namespace Starter {
     [CustomPropertyDrawer(typeof(IfView.Condition))]
     public class IfViewConditionDrawer : UnityEditor.PropertyDrawer {
         private PropertyField                    _logicalTypeField;
@@ -65,7 +65,7 @@ namespace PropertyDrawer {
             return container;
 
             void RefreshValueField() {
-                var view = property.serializedObject.targetObject as View;
+                var view = property.serializedObject.targetObject as View.View;
 
                 var pathProperty = property.FindPropertyRelative(nameof(IfView.Condition.path));
                 var obj          = view.viewmodel.GetPropertyType(pathProperty.stringValue);
@@ -194,7 +194,7 @@ namespace PropertyDrawer {
         }
 
         private void Reset(SerializedProperty property, VisualElement container) {
-            var view = property.serializedObject.targetObject as View;
+            var view = property.serializedObject.targetObject as View.View;
             if (view?.ViewModelType is null) {
                 _logicalTypeField.SetEnabled(false);
                 _pathField.SetEnabled(false);

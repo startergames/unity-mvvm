@@ -7,7 +7,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace PropertyDrawer {
+namespace Starter {
     using UnityEditor;
 
     [CustomPropertyDrawer(typeof(DataSetter))]

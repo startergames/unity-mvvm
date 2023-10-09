@@ -7,7 +7,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace PropertyDrawer {
+namespace Starter {
     [CustomPropertyDrawer(typeof(CallCommand.Parameter))]
     public class CallCommandParameterDrawer : UnityEditor.PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) { }
@@ -36,11 +36,11 @@ namespace PropertyDrawer {
             
             viewModelField.BindProperty(viewModelProperty);
             viewModelField.RegisterValueChangeCallback(evt => {
-                var viewModel = viewModelProperty.objectReferenceValue as ViewModel;
+                var viewModel = viewModelProperty.objectReferenceValue as ViewModel.ViewModel;
                 pathField.SetEnabled(viewModel != null);
             });
 
-            var viewModel = viewModelProperty.objectReferenceValue as ViewModel;
+            var viewModel = viewModelProperty.objectReferenceValue as ViewModel.ViewModel;
             pathField.BindProperty(pathProperty);
             pathField.SetEnabled(viewModel != null);
 
