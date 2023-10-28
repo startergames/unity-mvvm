@@ -8,6 +8,7 @@ using Starter.View;
 using Starter.ViewModel;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Starter {
@@ -68,7 +69,7 @@ namespace Starter {
                 var view = property.serializedObject.targetObject as View.View;
 
                 var pathProperty = property.FindPropertyRelative(nameof(IfView.Condition.path));
-                var obj          = view.viewmodel.GetPropertyType(pathProperty.stringValue);
+                var obj          = view.ViewModelSelf.GetPropertyType(pathProperty.stringValue);
                 if (obj is null) {
                     _typeField.SetEnabled(false);
                     _valueContainer.SetEnabled(false);
@@ -165,7 +166,26 @@ namespace Starter {
                         _valueContainer.Add(numericField);
                     }
                     else if (obj.IsClass || underlyingType != null) {
-                        if (_typeField.value != IfView.ConditionType.IsNull) {
+                        if (_typeField.value == IfView.ConditionType.Is) {
+                            var typeField   = new TextField("Type") {
+                                value = valueProperty.stringValue
+                            };
+                            var typeFindBtn = new Button {
+                                text = "Find"
+                            };
+                            typeFindBtn.clicked += () => {
+                                // var type = Type.GetType(valueProperty.stringValue);
+                                var popup = new TypeSearchPopup(typeName => {
+                                    typeField.value = typeName;
+                                    valueProperty.stringValue = typeName;
+                                    valueProperty.serializedObject.ApplyModifiedProperties();
+                                }, typeof(object));
+                                UnityEditor.PopupWindow.Show(new Rect(Event.current.mousePosition, Vector2.zero), popup);
+                            };
+                            _valueContainer.Add(typeField);
+                            _valueContainer.Add(typeFindBtn);
+                        }
+                        else if (_typeField.value != IfView.ConditionType.IsNull) {
                             var propertyField = new PropertyField();
                             propertyField.BindProperty(valueProperty);
                             _valueContainer.Add(propertyField);

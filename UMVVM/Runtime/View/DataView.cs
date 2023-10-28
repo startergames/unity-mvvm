@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Attributes;
 
 namespace Starter.View {
@@ -8,8 +9,7 @@ namespace Starter.View {
 
         public DataSetter setter;
 
-        public async void Start() {
-            await WaitViewModelInitialized();
+        protected override async Task ViewModelBinded() {
             SetData();
         }
 
@@ -21,8 +21,8 @@ namespace Starter.View {
         protected override void OnPathRegistration() {
             RegistePath(path);
         }
-        
-        public override void OnPropertyChanged(string propertyName) {
+
+        protected override void OnPropertyChanged(string propertyName) {
             SetData();
         }
     }

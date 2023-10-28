@@ -39,6 +39,5 @@ namespace Starter.ViewModel {
             OnPropertyChanged(propertyName);
             return true;
         }
-        
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -9,11 +10,8 @@ namespace Starter.View {
         public string              text;
         public TextMeshProUGUI     target;
 
-
-        private async void Start() {
+        protected override async Task ViewModelBinded() {
             if (target == null) target = GetComponent<TextMeshProUGUI>();
-            
-            await WaitViewModelInitialized();
             UpdateText();
         }
 
@@ -26,7 +24,7 @@ namespace Starter.View {
             TokenizeText(text);
         }
 
-        public override void OnPropertyChanged(string propertyName) {
+        protected override void OnPropertyChanged(string propertyName) {
             UpdateText();
         }
 

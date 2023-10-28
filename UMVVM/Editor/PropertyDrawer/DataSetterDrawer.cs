@@ -64,7 +64,7 @@ namespace Starter {
 
             void TargetChanged() {
                 if (property.serializedObject.targetObject is not DataView view) return;
-                _targetType = view.viewmodel.GetPropertyType(view.path);
+                _targetType = view.ViewModelSelf.GetPropertyType(view.path);
 
                 if (_targetType == null) {
                     memberSelectBtn.style.display = DisplayStyle.None;

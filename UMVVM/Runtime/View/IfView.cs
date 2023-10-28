@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Attributes;
 using Starter.View;
 using UnityEngine;
@@ -42,6 +43,9 @@ public class IfView : View {
 
         [ViewConditionTypeForObject]
         IsNull,
+        
+        [ViewConditionTypeForObject]
+        Is,
     }
 
     public enum LogicalType {
@@ -64,8 +68,7 @@ public class IfView : View {
         public string        value;
     }
 
-    public async void Start() {
-        await WaitViewModelInitialized();
+    protected override async Task ViewModelBinded() {
         UpdateView();
     }
 
@@ -75,7 +78,7 @@ public class IfView : View {
         }
     }
 
-    public override void OnPropertyChanged(string propertyName) {
+    protected override void OnPropertyChanged(string propertyName) {
         UpdateView();
     }
 
@@ -103,6 +106,7 @@ public class IfView : View {
                                           ConditionType.NullOrEmpty => string.IsNullOrEmpty(value as string),
                                           ConditionType.NullOrWhiteSpace => string.IsNullOrWhiteSpace(value as string),
                                           ConditionType.IsNull => value == null,
+                                          ConditionType.Is => Type.GetType(condition.value).IsInstanceOfType(value),
                                           _ => false
                                       };
 

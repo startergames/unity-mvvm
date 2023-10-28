@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Attributes;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,10 +11,8 @@ namespace Starter.View {
 
         public Image target;
 
-        private async void Start() {
+        protected override async Task ViewModelBinded() {
             if (target == null) target = GetComponent<Image>();
-
-            await WaitViewModelInitialized();
             SetImage();
         }
 
@@ -32,7 +31,7 @@ namespace Starter.View {
             RegistePath(path);
         }
 
-        public override void OnPropertyChanged(string propertyName) {
+        protected override void OnPropertyChanged(string propertyName) {
             SetImage();
         }
     }
