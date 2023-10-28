@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 
 namespace Starter.ViewModel {
@@ -22,6 +24,11 @@ namespace Starter.ViewModel {
     }
 
     public class TestViewModel : ViewModel {
+        [Inject]
+        private IMessageBoxService _messageBoxService;
+        [Inject]
+        private IObjectResolver    _objectResolver;
+        
         public override async Task Initialize() {
             TestString = "TestString";
             TestFloat  = 10.0f;
@@ -34,10 +41,17 @@ namespace Starter.ViewModel {
         public float    TestFloat;
         public Temp     Temp;
         public Sprite[] TestSprite;
+        public GameObject TestGameObject;
 
         public void SetStringAndFloat(string s, float f) {
             SetField(ref TestString, s, nameof(TestString));
             SetField(ref TestFloat, f, nameof(TestFloat));
+
+            _messageBoxService.Show("Test", "TestMessage", "Okay", "No!!!", () => {
+                Debug.Log("Ok clicked");
+            });
+
+            _objectResolver.Instantiate(TestGameObject);
         }
     }
 }
