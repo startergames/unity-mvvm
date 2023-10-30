@@ -327,9 +327,10 @@ MonoBehaviour:
   viewmodel: {fileID: 346360676}
   conditions:
   - logicalType: 0
-    path: Temp.testlist[0].length
-    type: 5
-    value: 100
+    path: Temp.testlist
+    type: 11
+    value: System.Collections.IList, mscorlib, Version=4.0.0.0, Culture=neutral,
+      PublicKeyToken=b77a5c561934e089
   onTrue:
     m_PersistentCalls:
       m_Calls:
@@ -670,6 +671,7 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
+  prefab: {fileID: 0}
 --- !u!1 &1635977626
 GameObject:
   m_ObjectHideFlags: 0
