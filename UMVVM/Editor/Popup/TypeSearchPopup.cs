@@ -15,11 +15,22 @@ public class TypeSearchPopup : PopupWindowContent {
     [CanBeNull]
     private readonly Type _baseType;
 
-    private ListView _listView;
+    private ListView  _listView;
+    private Toggle    _showSubclassOnlyToggle;
+    private TextField _searchField;
 
     public TypeSearchPopup(System.Action<string> onSelected, [CanBeNull] Type baseType = null) {
         _onSelected = onSelected;
         _baseType   = baseType;
+
+        _searchField = new TextField();
+        _searchField.RegisterValueChangedCallback(evt => FilterTypes(evt.newValue));
+        _searchField.Focus();
+        _showSubclassOnlyToggle = new Toggle("Show Subclass Only") {
+            value = false
+        };
+        _showSubclassOnlyToggle.RegisterValueChangedCallback(evt => FilterTypes(_searchField.value));
+        
         FilterTypes("");
     }
 
@@ -27,10 +38,6 @@ public class TypeSearchPopup : PopupWindowContent {
 
     public override void OnOpen() {
         var root = editorWindow.rootVisualElement;
-
-        var searchField = new TextField();
-        searchField.RegisterValueChangedCallback(evt => FilterTypes(evt.newValue));
-        searchField.Focus();
 
         _listView = new ListView() {
             itemsSource     = types,
@@ -46,7 +53,10 @@ public class TypeSearchPopup : PopupWindowContent {
             editorWindow.Close();
         };
 
-        root.Add(searchField);
+        if (_baseType?.IsInterface ?? false) {
+            root.Add(_showSubclassOnlyToggle);
+        }
+        root.Add(_searchField);
         root.Add(_listView);
     }
 
@@ -56,7 +66,7 @@ public class TypeSearchPopup : PopupWindowContent {
 
         foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies()) {
             foreach (var type in assembly.GetTypes()) {
-                if (_baseType != null && !type.IsSubclassOf(_baseType)) {
+                if (_showSubclassOnlyToggle.value && _baseType != null && !_baseType.IsAssignableFrom(type)) {
                     continue;
                 }
 

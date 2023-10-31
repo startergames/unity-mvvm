@@ -92,7 +92,7 @@ namespace Starter {
                         obj = underlyingType; // Update obj to its underlying type for further checks
                     }
 
-                    if (obj.IsClass || underlyingType != null) {
+                    if (obj.IsClass || obj.IsInterface || underlyingType != null) {
                         types.AddRange(GetAttributedEnums<ViewConditionTypeForObject>());
                     }
 
@@ -175,11 +175,12 @@ namespace Starter {
                             };
                             typeFindBtn.clicked += () => {
                                 // var type = Type.GetType(valueProperty.stringValue);
+                                var baseType = obj.IsInterface ? obj : typeof(object);
                                 var popup = new TypeSearchPopup(typeName => {
                                     typeField.value = typeName;
                                     valueProperty.stringValue = typeName;
                                     valueProperty.serializedObject.ApplyModifiedProperties();
-                                }, typeof(object));
+                                }, baseType);
                                 UnityEditor.PopupWindow.Show(new Rect(Event.current.mousePosition, Vector2.zero), popup);
                             };
                             _valueContainer.Add(typeField);
