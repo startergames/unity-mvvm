@@ -165,7 +165,7 @@ namespace Starter {
                         numericField.value = float.TryParse(valueProperty.stringValue, out var floatValue) ? floatValue : 0f;
                         _valueContainer.Add(numericField);
                     }
-                    else if (obj.IsClass || underlyingType != null) {
+                    else if (obj.IsClass || obj.IsInterface || underlyingType != null) {
                         if (_typeField.value == IfView.ConditionType.Is) {
                             var typeField   = new TextField("Type") {
                                 value = valueProperty.stringValue
