@@ -4,11 +4,11 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-public class MessageBoxService : IMessageBoxService {
+public class MessageBoxService : MonoBehaviour, IMessageBoxService {
     [SerializeField]
     public GameObject prefab;
-    
-    readonly IObjectResolver resolver;
+
+    private readonly IObjectResolver resolver;
     
     public MessageBoxService(IObjectResolver resolver) {
         this.resolver = resolver;

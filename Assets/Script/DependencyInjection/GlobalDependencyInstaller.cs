@@ -8,11 +8,14 @@ using VContainer.Unity;
 public class GlobalDependencyInstaller : LifetimeScope {
     [SerializeField]
     public TestBehaviour prefab;
-    
+
+    [SerializeField]
+    private MessageBoxService messageServicePrefab;
+
     protected override void Configure(IContainerBuilder builder) {
-        builder.Register<MessageBoxService>(Lifetime.Singleton)
-               .AsImplementedInterfaces();
         builder.RegisterComponentInHierarchy<TestViewModel>();
         builder.RegisterComponentInNewPrefab(prefab, Lifetime.Scoped);
+        builder.RegisterComponentInNewPrefab(messageServicePrefab, Lifetime.Scoped)
+               .As<IMessageBoxService>();
     }
 }
