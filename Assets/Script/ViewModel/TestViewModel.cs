@@ -51,7 +51,7 @@ namespace Starter.ViewModel {
 
         public string     TestString;
         public float      TestFloat;
-        public ITemp      Temp;
+        public Temp      Temp;
         public Sprite[]   TestSprite;
         public GameObject TestGameObject;
 

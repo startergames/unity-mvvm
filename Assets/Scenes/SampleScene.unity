@@ -220,6 +220,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TestString: Hello
   TestFloat: 123
+  Temp:
+    TestSprite: []
   TestSprite:
   - {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 0}
@@ -1463,19 +1465,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewmodel: {fileID: 346360676}
   tokens:
-  - rid: 5604479731948060942
-  - rid: 5604479731948060943
-  - rid: 5604479731948060944
-  - rid: 5604479731948060945
-  - rid: 5604479731948060946
-  - rid: 5604479731948060947
-  - rid: 5604479731948060948
-  - rid: 5604479731948060949
-  text: 'test : {TestString},
+  - rid: 5996589115268137696
+  - rid: 5996589115268137697
+  - rid: 5996589115268137698
+  - rid: 5996589115268137699
+  - rid: 5996589115268137700
+  - rid: 5996589115268137701
+  - rid: 5996589115268137702
+  - rid: 5996589115268137703
+  text: 'test : {Temp},
 
-    arr : {Temp.TestArray[2]}
+    arr : {Temp.TestArray}
 
-    list : {TestFloat}
+    list : {TestSprite}
 
     dict
     : {Temp.TestDict[4]}'
@@ -1483,44 +1485,44 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 5604479731948060942
+    - rid: 5996589115268137696
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: 'test : '
-    - rid: 5604479731948060943
+    - rid: 5996589115268137697
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
-        path: TestString
+        path: Temp
         format: 
-    - rid: 5604479731948060944
+    - rid: 5996589115268137698
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: ',
 
           arr : '
-    - rid: 5604479731948060945
+    - rid: 5996589115268137699
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
-        path: Temp.TestArray[2]
+        path: Temp.TestArray
         format: 
-    - rid: 5604479731948060946
+    - rid: 5996589115268137700
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: '
 
           list : '
-    - rid: 5604479731948060947
+    - rid: 5996589115268137701
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
-        path: TestFloat
+        path: TestSprite
         format: 
-    - rid: 5604479731948060948
+    - rid: 5996589115268137702
       type: {class: TextViewBase/TextToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         text: '
 
           dict : '
-    - rid: 5604479731948060949
+    - rid: 5996589115268137703
       type: {class: TextViewBase/PropertyToken, ns: Starter.View, asm: Starter.MVVM}
       data:
         path: Temp.TestDict[4]
