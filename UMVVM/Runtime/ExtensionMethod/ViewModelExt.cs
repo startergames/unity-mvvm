@@ -8,7 +8,6 @@ using Util;
 
 namespace ExtensionMethod {
     public static class ViewModelExt {
-        
         public static object GetPropertyValue(this ViewModel viewModel, string path) {
             path = viewModel.GetFullPath(path);
             object currentObject = viewModel is ViewModelRelay relay ? relay.ViewModel : viewModel;
@@ -87,9 +86,7 @@ namespace ExtensionMethod {
                     if (member == null) return null;
 
                     var memberType = member switch {
-                        PropertyInfo property => property.PropertyType,
-                        FieldInfo field => field.FieldType,
-                        _ => null
+                        PropertyInfo property => property.PropertyType, FieldInfo field => field.FieldType, _ => null
                     };
 
                     if (memberType == null) return null;
@@ -109,9 +106,7 @@ namespace ExtensionMethod {
                     if (member == null) return null;
 
                     var memberType = member switch {
-                        PropertyInfo property => property.PropertyType,
-                        FieldInfo field => field.FieldType,
-                        _ => null
+                        PropertyInfo property => property.PropertyType, FieldInfo field => field.FieldType, _ => null
                     };
 
                     if (memberType == null) return null;
@@ -126,9 +121,7 @@ namespace ExtensionMethod {
                     if (!members.Any()) return null;
                     var member = members.First();
                     type = member switch {
-                        PropertyInfo property => property.PropertyType,
-                        FieldInfo field => field.FieldType,
-                        _ => null
+                        PropertyInfo property => property.PropertyType, FieldInfo field => field.FieldType, _ => null
                     };
                 }
             }
@@ -138,18 +131,18 @@ namespace ExtensionMethod {
 
         public static string GetFullPath(this ViewModel currentObject, string path) {
             if (currentObject is ViewModelRelay relay)
-                return string.IsNullOrWhiteSpace(path) ? relay.PrefixPath :
-                       path.StartsWith('[')            ? relay.PrefixPath + path : 
-                                                         string.Join('.', relay.PrefixPath, path);
+                return string.IsNullOrWhiteSpace(path)             ? relay.PrefixPath :
+                       path.StartsWith('[')                        ? relay.PrefixPath + path :
+                       string.IsNullOrWhiteSpace(relay.PrefixPath) ? path :
+                                                                     string.Join('.', relay.PrefixPath, path)
+            ;
 
             return path;
         }
 
         private static object GetMemberValue(MemberInfo member, object src) {
             return member switch {
-                PropertyInfo property => property.GetValue(src, null),
-                FieldInfo field => field.GetValue(src),
-                _ => null
+                PropertyInfo property => property.GetValue(src, null), FieldInfo field => field.GetValue(src), _ => null
             };
         }
     }
