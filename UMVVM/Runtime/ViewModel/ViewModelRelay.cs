@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Attributes;
 using UnityEngine;
@@ -50,6 +51,20 @@ namespace Starter.ViewModel {
                 Reversal(out var prefix, true);
                 return prefix;
             }
+        }
+
+        private void Awake() {
+            RegistPropertyChangedCallback();
+        }
+
+        private void RegistPropertyChangedCallback() {
+            if (viewmodel == null)
+                return;
+            viewmodel.PropertyChanged += ViewModelOnPropertyChanged;
+        }
+
+        private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e) {
+            OnPropertyChanged(e.PropertyName);
         }
 
         private ViewModel Reversal(out string prefix, bool ignoreLastPrefix = false) {
