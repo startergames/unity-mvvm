@@ -71,11 +71,16 @@ namespace Starter.ViewModel {
             var parent = viewmodel;
             prefix = ignoreLastPrefix ? null : prefixPath;
             while (parent is ViewModelRelay relay) {
+                var parentPrefix = relay.PrefixPath;
+                
                 prefix = string.IsNullOrWhiteSpace(prefix)
                              ? relay.prefixPath
                              : prefix.StartsWith('[') 
-                                 ? relay.PrefixPath + prefix
-                                 : string.Join('.', relay.PrefixPath, prefix);
+                                 ? parentPrefix + prefix
+                                 : string.IsNullOrWhiteSpace(parentPrefix) 
+                                     ? prefix 
+                                     : string.Join('.', parentPrefix, prefix);
+                
                 if (parent == relay.viewmodel)
                     break;
                 

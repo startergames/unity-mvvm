@@ -130,12 +130,14 @@ namespace ExtensionMethod {
         }
 
         public static string GetFullPath(this ViewModel currentObject, string path) {
-            if (currentObject is ViewModelRelay relay)
-                return string.IsNullOrWhiteSpace(path)             ? relay.PrefixPath :
-                       path.StartsWith('[')                        ? relay.PrefixPath + path :
-                       string.IsNullOrWhiteSpace(relay.PrefixPath) ? path :
-                                                                     string.Join('.', relay.PrefixPath, path)
-            ;
+            if (currentObject is ViewModelRelay relay) {
+                var relayPrefixPath = relay.PrefixPath;
+                return string.IsNullOrWhiteSpace(path)            ? relayPrefixPath :
+                       path.StartsWith('[')                       ? relayPrefixPath + path :
+                       string.IsNullOrWhiteSpace(relayPrefixPath) ? path :
+                                                                    string.Join('.', relayPrefixPath, path)
+                    ;
+            }
 
             return path;
         }
