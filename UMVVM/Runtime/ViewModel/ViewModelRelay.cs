@@ -61,6 +61,9 @@ namespace Starter.ViewModel {
                              : prefix.StartsWith('[') 
                                  ? relay.PrefixPath + prefix
                                  : string.Join('.', relay.PrefixPath, prefix);
+                if (parent == relay.viewmodel)
+                    break;
+                
                 parent = relay.viewmodel;
             }
 
