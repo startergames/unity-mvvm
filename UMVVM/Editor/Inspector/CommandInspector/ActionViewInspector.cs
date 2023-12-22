@@ -41,6 +41,9 @@ namespace Inspector.CommandInspector {
                     return;
 
                 var type = viewModel is ViewModelRelay relay ? relay.ViewModelType : viewModel.GetType();
+                if (type == null) {
+                    EditorUtility.DisplayDialog("Error", "ViewModel type is null", "OK");
+                }
                 PopupWindow.Show(new Rect(Event.current.mousePosition, Vector2.zero),
                     new MethodSelectorPopup(
                         type,
