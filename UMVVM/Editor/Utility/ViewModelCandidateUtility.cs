@@ -37,6 +37,9 @@ namespace Starter {
         }
 
         public static IList GetMatchingMembers(this SerializedObject so, string path, string member = null) {
+            if (string.IsNullOrWhiteSpace(path))
+                return null;
+            
             Type type;
             if (so.targetObject is View.View view) {
                 if (view.ViewModelType is null) return null;
