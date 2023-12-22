@@ -21,9 +21,13 @@ namespace Inspector.CommandInspector {
             var viewModelProperty  = serializedObject.FindProperty(nameof(ActionView.viewModel));
             var methodProperty     = serializedObject.FindProperty(nameof(ActionView.methodData));
             var parametersProperty = serializedObject.FindProperty(nameof(ActionView.parameters));
+            var onInvokedProperty  = serializedObject.FindProperty(nameof(ActionView.onInvoked));
 
             var viewModelField = new PropertyField();
             viewModelField.BindProperty(viewModelProperty);
+            
+            var onInvokedField = new PropertyField();
+            onInvokedField.BindProperty(onInvokedProperty);
 
             var methodBtn = new Button() {
                 text = "Select method"
@@ -70,6 +74,7 @@ namespace Inspector.CommandInspector {
             root.Add(viewModelField);
             root.Add(methodBtn);
             root.Add(parameterContainer);
+            root.Add(onInvokedField);
 
             return root;
         }

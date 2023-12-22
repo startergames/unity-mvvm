@@ -37,12 +37,12 @@ namespace Starter {
             viewModelField.BindProperty(viewModelProperty);
             viewModelField.RegisterValueChangeCallback(evt => {
                 var viewModel = viewModelProperty.objectReferenceValue as ViewModel.ViewModel;
-                pathField.SetEnabled(viewModel != null);
+                pathField.style.display = viewModel == null ? DisplayStyle.None : DisplayStyle.Flex;
             });
 
             var viewModel = viewModelProperty.objectReferenceValue as ViewModel.ViewModel;
             pathField.BindProperty(pathProperty);
-            pathField.SetEnabled(viewModel != null);
+            pathField.style.display = viewModel == null ? DisplayStyle.None : DisplayStyle.Flex;
 
             var _valueContainer = new VisualElement();
             var type            = Type.GetType(typeProperty.stringValue);

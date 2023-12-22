@@ -9,6 +9,7 @@ using Starter.Util;
 using Starter.View;
 using Starter.ViewModel;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Command {
     public class ActionView : MonoBehaviour {
@@ -51,35 +52,43 @@ namespace Command {
         public ViewModel   viewModel;
         public string      methodData;
         public Parameter[] parameters;
+        public UnityEvent  onInvoked;
 
         private ViewModel ViewModel => viewModel is ViewModelRelay relay ? relay.ViewModel : viewModel;
 
         public async void Invoke() {
-            var memberInfo = MemberInfoSerializer.Deserialize(methodData);
-            switch (memberInfo) {
-                case FieldInfo fieldInfo: {
-                    var param = this.parameters.First();
-                    fieldInfo.SetValue(ViewModel, param.Value);
-                    break;
-                }
-                case PropertyInfo propertyInfo: {
-                    var param = this.parameters.First();
-                    propertyInfo.SetValue(ViewModel, param.Value);
-                    break;
-                }
-                case MethodInfo methodInfo:
-                    var parameterInfos = methodInfo.GetParameters();
-                    var args           = new object[parameterInfos.Length];
-                    for (int i = 0; i < parameterInfos.Length; i++) {
-                        args[i] = parameters[i].GetValue(parameterInfos[i].ParameterType);
+            try {
+                var memberInfo = MemberInfoSerializer.Deserialize(methodData);
+                switch (memberInfo) {
+                    case FieldInfo fieldInfo: {
+                        var param = this.parameters.First();
+                        fieldInfo.SetValue(ViewModel, param.Value);
+                        break;
                     }
-
-                    var result = methodInfo.Invoke(ViewModel, args);
-                    if(result is Task task) {
-                        await task;
+                    case PropertyInfo propertyInfo: {
+                        var param = this.parameters.First();
+                        propertyInfo.SetValue(ViewModel, param.Value);
+                        break;
                     }
+                    case MethodInfo methodInfo:
+                        var parameterInfos = methodInfo.GetParameters();
+                        var args           = new object[parameterInfos.Length];
+                        for (int i = 0; i < parameterInfos.Length; i++) {
+                            args[i] = parameters[i].GetValue(parameterInfos[i].ParameterType);
+                        }
 
-                    break;
+                        var result = methodInfo.Invoke(ViewModel, args);
+                        if (result is Task task) {
+                            await task;
+                        }
+
+                        break;
+                }
+
+                onInvoked?.Invoke();
+            }
+            catch (Exception e) {
+                Debug.LogError(e);
             }
         }
     }
