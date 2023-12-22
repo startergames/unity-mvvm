@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Attributes;
 using ExtensionMethod;
 using Starter.Util;
@@ -10,7 +11,7 @@ using Starter.ViewModel;
 using UnityEngine;
 
 namespace Command {
-    public class CallCommand : MonoBehaviour {
+    public class ActionView : MonoBehaviour {
         [System.Serializable]
         public class Parameter {
             public ViewModel viewmodel;
@@ -53,7 +54,7 @@ namespace Command {
 
         private ViewModel ViewModel => viewModel is ViewModelRelay relay ? relay.ViewModel : viewModel;
 
-        public void Invoke() {
+        public async void Invoke() {
             var memberInfo = MemberInfoSerializer.Deserialize(methodData);
             switch (memberInfo) {
                 case FieldInfo fieldInfo: {
@@ -73,7 +74,11 @@ namespace Command {
                         args[i] = parameters[i].GetValue(parameterInfos[i].ParameterType);
                     }
 
-                    methodInfo.Invoke(ViewModel, args);
+                    var result = methodInfo.Invoke(ViewModel, args);
+                    if(result is Task task) {
+                        await task;
+                    }
+
                     break;
             }
         }

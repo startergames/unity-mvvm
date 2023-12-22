@@ -13,14 +13,14 @@ using UnityEngine.UIElements;
 using PopupWindow = UnityEditor.PopupWindow;
 
 namespace Inspector.CommandInspector {
-    [CustomEditor(typeof(CallCommand))]
-    public class CallCommandInspector : UnityEditor.Editor {
+    [CustomEditor(typeof(ActionView))]
+    public class ActionViewInspector : UnityEditor.Editor {
         public override VisualElement CreateInspectorGUI() {
             var root = new VisualElement();
 
-            var viewModelProperty  = serializedObject.FindProperty(nameof(CallCommand.viewModel));
-            var methodProperty     = serializedObject.FindProperty(nameof(CallCommand.methodData));
-            var parametersProperty = serializedObject.FindProperty(nameof(CallCommand.parameters));
+            var viewModelProperty  = serializedObject.FindProperty(nameof(ActionView.viewModel));
+            var methodProperty     = serializedObject.FindProperty(nameof(ActionView.methodData));
+            var parametersProperty = serializedObject.FindProperty(nameof(ActionView.parameters));
 
             var viewModelField = new PropertyField();
             viewModelField.BindProperty(viewModelProperty);
@@ -40,7 +40,7 @@ namespace Inspector.CommandInspector {
                 if (viewModelProperty.objectReferenceValue is not ViewModel viewModel)
                     return;
 
-                var type = viewModel is ViewModelRelay relay ? relay.ViewModel.GetType() : viewModel.GetType();
+                var type = viewModel is ViewModelRelay relay ? relay.ViewModelType : viewModel.GetType();
                 PopupWindow.Show(new Rect(Event.current.mousePosition, Vector2.zero),
                     new MethodSelectorPopup(
                         type,

@@ -52,6 +52,12 @@ public class TypeSearchPopup : PopupWindowContent {
             _onSelected.Invoke(((Type)objects.First()).AssemblyQualifiedName);
             editorWindow.Close();
         };
+        _listView.RegisterCallback<MouseDownEvent>(e => {
+            if (e.clickCount == 2) {
+                _onSelected.Invoke(((Type)_listView.itemsSource[_listView.selectedIndex]).AssemblyQualifiedName);
+                editorWindow.Close();
+            }
+        });
 
         if (_baseType?.IsInterface ?? false) {
             root.Add(_showSubclassOnlyToggle);
@@ -66,7 +72,7 @@ public class TypeSearchPopup : PopupWindowContent {
 
         foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies()) {
             foreach (var type in assembly.GetTypes()) {
-                if (_showSubclassOnlyToggle.value && _baseType != null && !_baseType.IsAssignableFrom(type)) {
+                if (_baseType != null && ((_baseType.IsInterface && _showSubclassOnlyToggle.value) || !_baseType.IsAssignableFrom(type))) {
                     continue;
                 }
 

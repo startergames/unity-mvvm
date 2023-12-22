@@ -8,8 +8,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Starter {
-    [CustomPropertyDrawer(typeof(CallCommand.Parameter))]
-    public class CallCommandParameterDrawer : UnityEditor.PropertyDrawer {
+    [CustomPropertyDrawer(typeof(ActionView.Parameter))]
+    public class ActionViewParameterDrawer : UnityEditor.PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) { }
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property) {
@@ -22,7 +22,7 @@ namespace Starter {
             };
             root.Add(label);
 
-            var viewModelProperty = property.FindPropertyRelative(nameof(CallCommand.Parameter.viewmodel));
+            var viewModelProperty = property.FindPropertyRelative(nameof(ActionView.Parameter.viewmodel));
             var nameProperty      = property.FindPropertyRelative("name");
             var pathProperty      = property.FindPropertyRelative("path");
             var valueProperty     = property.FindPropertyRelative("value");
