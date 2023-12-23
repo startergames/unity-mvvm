@@ -8,15 +8,69 @@ using Util;
 
 namespace ExtensionMethod {
     public static class ViewModelExt {
+
+        public static void SetPropertyValue<T>(this ViewModel viewModel, string path, T value) {
+            if (!GetPropertyMemberInfo(viewModel, path, out var currentObject, out var memberInfo))
+                throw new ArgumentException("Invalid path");
+
+            var memberType = GetMemberType(memberInfo);
+            if (memberType != typeof(T))
+                throw new ArgumentException("Invalid value type");
+
+            switch (memberInfo) {
+                case PropertyInfo property:
+                    property.SetValue(currentObject, value);
+                    break;
+                case FieldInfo field:
+                    field.SetValue(currentObject, value);
+                    break;
+                case MethodInfo method:
+                    var parameters = method.GetParameters();
+                    if(parameters.Length == 0)
+                        throw new ArgumentException("method has no parameter");
+                    
+                    var args       = new object[parameters.Length];
+                    for (var i = 0; i < parameters.Length; i++) {
+                        if (i == 0) {
+                            // First parameter receives the provided value
+                            args[i] = value;
+                        }
+                        else {
+                            // Other parameters receive their default values if they are optional
+                            if(!parameters[i].IsOptional)
+                                throw new ArgumentException("method needs more then one parameter");
+                            
+                            args[i] = parameters[i].DefaultValue;
+                        }
+                    }
+
+                    method.Invoke(currentObject, args);
+                    break;
+                default:
+                    throw new ArgumentException("Invalid member type on path : " + memberInfo.Name);
+            }
+        }
         public static object GetPropertyValue(this ViewModel viewModel, string path) {
-            path = viewModel.GetFullPath(path);
-            object currentObject = viewModel is ViewModelRelay relay ? relay.ViewModel : viewModel;
-            if (currentObject == null || string.IsNullOrEmpty(path)) return null;
+            if (!GetPropertyMemberInfo(viewModel, path, out var currentObject, out var memberInfo))
+                return null;
+
+            return GetMemberValue(memberInfo, currentObject);
+        }
+
+        private static bool GetPropertyMemberInfo(ViewModel viewModel, string path, out object currentObject, out MemberInfo memberInfo) {
+            memberInfo    = null;
+            currentObject = null;
+            
+            path          = viewModel.GetFullPath(path);
+            currentObject = viewModel is ViewModelRelay relay ? relay.ViewModel : viewModel;
+            if (currentObject == null || string.IsNullOrEmpty(path))
+                return false;
 
             var memberParts = path.Split('.');
 
-            foreach (var part in memberParts) {
-                if (currentObject == null) return null;
+            for (var i = 0; i < memberParts.Length; i++) {
+                var part = memberParts[i];
+                if (currentObject == null) return false;
 
                 var memberType = currentObject.GetType();
                 var match      = ConstInfo.ContainerRegex.Match(part);
@@ -57,14 +111,21 @@ namespace ExtensionMethod {
                 }
                 else {
                     var members = memberType.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                    if (!members.Any())
-                        return null;
+                    if (!members.Any()) {
+                        currentObject = null;
+                        memberInfo    = null;
+                        return false;
+                    }
+
+                    if (i == memberParts.Length - 1) {
+                        memberInfo = members.First();
+                        return true;
+                    }
 
                     currentObject = GetMemberValue(members.First(), currentObject);
                 }
             }
-
-            return currentObject;
+            return false;
         }
 
         public static Type GetPropertyType(this ViewModel viewmodel, string path) {
@@ -120,13 +181,19 @@ namespace ExtensionMethod {
                     var members = type.GetMember(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
                     if (!members.Any()) return null;
                     var member = members.First();
-                    type = member switch {
-                        PropertyInfo property => property.PropertyType, FieldInfo field => field.FieldType, _ => null
-                    };
+                    type = GetMemberType(member);
                 }
             }
 
             return type;
+        }
+
+        private static Type GetMemberType(MemberInfo member) {
+            return member switch {
+                PropertyInfo property => property.PropertyType
+              , FieldInfo field       => field.FieldType
+              , _                     => null
+            };
         }
 
         public static string GetFullPath(this ViewModel currentObject, string path) {
@@ -144,7 +211,9 @@ namespace ExtensionMethod {
 
         private static object GetMemberValue(MemberInfo member, object src) {
             return member switch {
-                PropertyInfo property => property.GetValue(src, null), FieldInfo field => field.GetValue(src), _ => null
+                PropertyInfo property => property.GetValue(src, null)
+              , FieldInfo field => field.GetValue(src)
+              , _ => null
             };
         }
     }

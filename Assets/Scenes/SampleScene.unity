@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8e4cc13a41457db2f75e42a3543415, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewModel: {fileID: 346360676}
+  viewModel: {fileID: 1422816316}
   methodData: Starter.ViewModel.TestViewModel, Assembly-CSharp, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null|SetStringAndFloat|Method|System.String,
     mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089#System.Single,
@@ -162,12 +162,15 @@ MonoBehaviour:
     type: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
     name: String s
     path: 
-    value: asdfasdf
+    value: 
   - viewmodel: {fileID: 0}
     type: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
     name: Single f
     path: 
-    value: 2222
+    value: 
+  onInvoked:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &24927853
 Transform:
   m_ObjectHideFlags: 0
@@ -774,6 +777,9 @@ MonoBehaviour:
   methodData: Starter.ViewModel.TestViewModel, Assembly-CSharp, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null|ShowMessageBox|Method|
   parameters: []
+  onInvoked:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1189835771
 GameObject:
   m_ObjectHideFlags: 0
@@ -1091,7 +1097,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 24927852}
-        m_TargetAssemblyTypeName: Command.CallCommand, Starter.MVVM
+        m_TargetAssemblyTypeName: Command.ActionView, Starter.MVVM
         m_MethodName: Invoke
         m_Mode: 1
         m_Arguments:
