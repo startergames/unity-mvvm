@@ -101,7 +101,7 @@ namespace Starter.View {
             return (T)viewmodel.GetPropertyValue(path);
         }
         
-        public void SetPropertyValue(string path, object value) {
+        public void SetPropertyValue<T>(string path, T value) {
             viewmodel.SetPropertyValue(path, value);
         }
     }
