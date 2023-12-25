@@ -7,21 +7,25 @@ using UnityEngine;
 
 namespace Starter.ViewModel {
     public abstract class ViewModel : MonoBehaviour, INotifyPropertyChanged {
+        private readonly TaskCompletionSource<bool> _initializeTaskCompletionSource = new();
 
-        public                  bool  IsInitialized { get; private set; }
-        public abstract         Task  Initialize();
-        public abstract         void  Finalize();
+        public bool IsInitialized {
+            get => _initializeTaskCompletionSource.Task.IsCompleted && _initializeTaskCompletionSource.Task.Result;
+            private set => _initializeTaskCompletionSource.SetResult(value);
+        }
+
+        public abstract Task Initialize();
+        public abstract void Finalize();
 
         public async Task InitializeAwaiter() {
-            while (!IsInitialized)
-                await Task.Delay(10);
+            await _initializeTaskCompletionSource.Task;
         }
 
         private async void Start() {
             await Initialize();
             IsInitialized = true;
         }
-        
+
         private void OnDestroy() {
             Finalize();
         }

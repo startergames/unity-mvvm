@@ -20,7 +20,7 @@ namespace Starter.View {
             var image = GetPropertyValue<Sprite>(path);
 
             if (image == null) {
-                Debug.LogError("The specified path is invalid");
+                Debug.LogError("The specified path is invalid : " + path);
                 return;
             }
 

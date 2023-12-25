@@ -45,8 +45,14 @@ namespace Starter.View {
         private void Awake() {
             OnPathRegistration();
             RegistPropertyChangedCallback();
-            ViewModelBinded();
             IsInitialized             =  true;
+        }
+
+        private async void Start() {
+            if (viewmodel != null) {
+                await viewmodel.InitializeAwaiter();
+                ViewModelBinded();
+            }
         }
 
         private void OnDestroy() {
