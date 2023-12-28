@@ -19,7 +19,11 @@ namespace Starter.ViewModel {
         public ViewModel ViewModel {
             get => Reversal(out _);
             set {
+                if (viewmodel != null)
+                    viewmodel.PropertyChanged -= ViewmodelOnPropertyChanged;
                 viewmodel = value;
+                if (viewmodel != null)
+                    viewmodel.PropertyChanged += ViewmodelOnPropertyChanged;
                 OnPropertyChanged();
             }
         }
@@ -27,12 +31,8 @@ namespace Starter.ViewModel {
         public System.Type ViewModelType =>
             Reversal(out _)?.GetType()
          ?? (
-                viewmodel is ViewModelRelay relay
-                    ? relay.ViewModelType
-                    :
-                !string.IsNullOrWhiteSpace(relayTypeInfo)
-                    ? System.Type.GetType(relayTypeInfo)
-                    : null
+                viewmodel is ViewModelRelay relay         ? relay.ViewModelType :
+                !string.IsNullOrWhiteSpace(relayTypeInfo) ? System.Type.GetType(relayTypeInfo) : null
             );
 
         public string PrefixPath {
@@ -72,18 +72,14 @@ namespace Starter.ViewModel {
             prefix = ignoreLastPrefix ? null : prefixPath;
             while (parent is ViewModelRelay relay) {
                 var parentPrefix = relay.PrefixPath;
-                
-                prefix = string.IsNullOrWhiteSpace(prefix)
-                             ? relay.prefixPath
-                             : prefix.StartsWith('[') 
-                                 ? parentPrefix + prefix
-                                 : string.IsNullOrWhiteSpace(parentPrefix) 
-                                     ? prefix 
-                                     : string.Join('.', parentPrefix, prefix);
-                
+
+                prefix = string.IsNullOrWhiteSpace(prefix)       ? relay.prefixPath :
+                         prefix.StartsWith('[')                  ? parentPrefix + prefix :
+                         string.IsNullOrWhiteSpace(parentPrefix) ? prefix : string.Join('.', parentPrefix, prefix);
+
                 if (parent == relay.viewmodel)
                     break;
-                
+
                 parent = relay.viewmodel;
             }
 
@@ -93,6 +89,9 @@ namespace Starter.ViewModel {
         public bool findInParent = false;
 
         public override async Task Initialize() {
+            if (viewmodel == null)
+                return;
+
             await viewmodel.InitializeAwaiter();
             viewmodel.PropertyChanged += ViewmodelOnPropertyChanged;
         }
