@@ -97,6 +97,8 @@ namespace Starter.ViewModel {
         }
 
         public override void Finalize() {
+            if (viewmodel == null)
+                return;
             viewmodel.PropertyChanged -= ViewmodelOnPropertyChanged;
         }
 
