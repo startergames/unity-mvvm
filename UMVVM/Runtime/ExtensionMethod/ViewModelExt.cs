@@ -173,7 +173,6 @@ namespace ExtensionMethod {
         }
 
         public static Type GetPropertyType(this ViewModel viewmodel, string path) {
-            if (string.IsNullOrWhiteSpace(path)) return null;
             var fullpath = viewmodel.GetFullPath(path);
             var type     = viewmodel is ViewModelRelay relay ? relay.ViewModelType : viewmodel?.GetType();
             if (type == null) return null;
