@@ -49,7 +49,7 @@ namespace Starter {
             // Update the property value when the TextField value changes
             _textField.RegisterValueChangedCallback(evt => {
                 //property.stringValue  = evt.newValue;
-                listView.itemsSource = GetMatchingMembers(property, _textField.value);
+                listView.itemsSource = GetMatchingMembers(property, evt.newValue);
                 listView.RefreshItems();
             });
 
@@ -62,7 +62,13 @@ namespace Starter {
         private IList GetMatchingMembers(SerializedProperty property, string path) {
             var viewModelPathAttribute = (ViewModelPathAttribute)attribute;
             var member                 = viewModelPathAttribute.member;
-            return property.serializedObject.GetMatchingMembers(path, member);
+            if (!string.IsNullOrEmpty(member)) {
+                var propertyPath = property.propertyPath;
+                var memberPath   = propertyPath[..propertyPath.LastIndexOf('.')] + "." + member;
+                return property.serializedObject.GetMatchingMembers(path, memberPath);
+            }
+            
+            return property.serializedObject.GetMatchingMembers(path);
         }
 
         private void Reset(SerializedProperty property) { }

@@ -37,9 +37,6 @@ namespace Starter {
         }
 
         public static IList GetMatchingMembers(this SerializedObject so, string path, string member = null) {
-            if (string.IsNullOrWhiteSpace(path))
-                return null;
-            
             Type type;
             if (so.targetObject is View.View view) {
                 if (view.ViewModelType is null) return null;
@@ -47,7 +44,12 @@ namespace Starter {
                 type = view.ViewModelType;
                 var prefixPath = view.PrefixPath;
                 if (!string.IsNullOrWhiteSpace(prefixPath)) {
-                    path = string.Join('.', prefixPath, path);
+                    if (string.IsNullOrEmpty(path)) {
+                        path = prefixPath;
+                    }
+                    else {
+                        path = string.Join('.', prefixPath, path);
+                    }
                 }
             }
             else if (so.targetObject is ViewModelRelay relay) {
@@ -57,8 +59,7 @@ namespace Starter {
             }
             else {
                 if (!string.IsNullOrEmpty(member)) {
-                    var siblingPropertyPath = path[..path.LastIndexOf('.')] + "." + member;
-                    var siblingProperty     = so.FindProperty(siblingPropertyPath);
+                    var siblingProperty     = so.FindProperty(member);
 
                     var siblingValue = siblingProperty?.objectReferenceValue;
                     if (siblingValue is not ViewModel.ViewModel viewModel)
