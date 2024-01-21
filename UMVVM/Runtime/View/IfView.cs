@@ -132,6 +132,13 @@ public class IfView : View {
 
     private static object ChangeType(Condition condition, object value) {
         var conversionType = value.GetType();
+        if (string.IsNullOrWhiteSpace(condition.value)) {
+            if (conversionType.IsValueType) {
+                return Activator.CreateInstance(conversionType);
+            }
+            return null;
+        }
+        
         if (conversionType.IsEnum)
             return Enum.TryParse(conversionType, condition.value, true, out var enumValue) ? enumValue : null;
         return Convert.ChangeType(condition.value, conversionType);
