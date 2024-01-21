@@ -10,9 +10,6 @@ namespace Starter.View {
         public DataSetter setter;
 
         protected override async Task ViewModelBinded() {
-            while (ViewModel.IsInitialized) {
-                await Task.Delay(10);
-            } 
             SetData();
         }
 
